@@ -33,7 +33,7 @@ private extension SudokuController {
         if let lastIndex = model.lastUnguessedIndex {
             for index in 0..<lastIndex-1 {
                 let isClue = model.cells[index].isClue
-                if !isClue {
+                if !isClue && model.debugAnswers[index] != 5 {
                     model.guess(index, value: model.debugAnswers[index])
                 }
             }
@@ -86,6 +86,27 @@ private extension SudokuController {
         undoManager?.currentItem = undoState
         if model.isSolved {
             eventPublisher.send(.solved)
+        } else if let lastIndexes = model.lastNumberIndexes {
+            autofillLastNumber(lastIndexes)
+        }
+    }
+
+    private func autofillLastNumber(_ lastIndexes: [Int]) {
+        var count: Double = 1
+        let sortedLastIndexes = lastIndexes.sorted { lhs, rhs in
+            SudokuConstants.indexToGrid(lhs) < SudokuConstants.indexToGrid(rhs)
+        }
+        let lastNumber = model.debugAnswers[sortedLastIndexes[0]]
+        let duration = 0.5
+        highlightedNumber = lastNumber
+        for index in sortedLastIndexes {
+            DispatchQueue.main.asyncAfter(deadline: .now() + count) { [index = index] in
+                self.model.guess(index, value: lastNumber)
+            }
+            count += duration
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(sortedLastIndexes.count)*duration + 1.0) {
+            self.eventPublisher.send(.solved)
         }
     }
 

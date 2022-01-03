@@ -12,6 +12,7 @@ struct ContentView: View {
                     }
                 }
         }
+        .navigationViewStyle(.stack)
     }
 
     private var undoButton: some View {
