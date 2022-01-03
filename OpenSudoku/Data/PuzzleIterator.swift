@@ -32,11 +32,11 @@ class PuzzleIterator: IteratorProtocol {
             case .easy:
                 return "puzzles_easy_key"
             case .medium:
-                return "puzzles_easy_key"
+                return "puzzles_medium_key"
             case .hard:
-                return "puzzles_easy_key"
+                return "puzzles_hard_key"
             case .evil:
-                return "puzzles_easy_key"
+                return "puzzles_evil_key"
         }
     }
 
