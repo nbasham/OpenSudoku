@@ -9,6 +9,7 @@ struct SudokuPlayView: View {
 
     var body: some View {
         VStack(spacing: 32) {
+            MarkerPickerView()
             ZStack {
                 BoardView()
                 CellsView()

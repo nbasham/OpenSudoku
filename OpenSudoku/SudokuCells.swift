@@ -6,11 +6,14 @@ class SudokuCells: ObservableObject {
     @Published var usage: [[Bool]] = Array(repeating: Array(repeating: false, count: 9), count: 9)
     private var answers: [Int]
     private var guesses: [Int?]
+    var markers: [[Bool]]
+    var undoState: ([[Bool]], [Int?]) { return (markers, guesses) }
 
     init() {
         cells = []
         answers = Array(repeating: 0, count: 81)
         guesses = Array(repeating: nil, count: 81)
+        markers = Array(repeating: Array(repeating: false, count: 9), count: 81)
     }
 
     func startGame(puzzle: [Int]) {
@@ -24,23 +27,35 @@ class SudokuCells: ObservableObject {
         calcUsage()
     }
 
-    func undo(guesses: [Int?]) {
+    func undo(markers: [[Bool]], guesses: [Int?]) {
         self.guesses = guesses
+        self.markers = markers
+        calc()
+    }
+
+    func mark(_ index: Int, number: Int) {
+        guard !isClue(index) else { fatalError("Can't set a marker on a clue.") }
+        markers[index][number-1].toggle()
+        guesses[index] = nil
         calc()
     }
 
     func guess(_ index: Int, value: Int) {
         guard !isClue(index) else { fatalError("Can't set a value on a clue.") }
+        cells[index].markers = Array(repeating: false, count: 9)
         if guesses[index] == value {
             guesses[index] = nil
         } else {
             removeValuesFromGrid(index, value)
             guesses[index] = value
         }
+        markers[index] = Array(repeating: false, count: 9)
         calc()
     }
-    var undoState: [Int?] { return guesses }
-    var debugAnswers: [Int] { return answers }
+
+    func answer(at index: Int) -> Int {
+        answers[index]
+    }
 }
 
 extension SudokuCells {
@@ -100,7 +115,7 @@ extension SudokuCells {
 private extension SudokuCells {
 
     func value(_ index: Int) -> CellModel {
-        CellModel(isClue: isClue(index), value: displayValue(index), isCorrect: isCorrect(index), conflicts: isConflict(index, value: displayValue(index)))
+        CellModel(isClue: isClue(index), value: displayValue(index), isCorrect: isCorrect(index), conflicts: isConflict(index, value: displayValue(index)), markers: markers[index])
     }
 
     func isClue(_ index: Int) -> Bool {

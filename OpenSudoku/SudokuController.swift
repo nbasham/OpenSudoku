@@ -14,7 +14,7 @@ class SudokuController: ObservableObject {
     private var undoManager: UndoHistory<UndoState>?
     let eventPublisher = PassthroughSubject<GameEvent, Never>()
     private var undoState: UndoState {
-        UndoState(selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, guesses: model.undoState)
+        UndoState(selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, guesses: model.undoState.1, markers: model.undoState.0)
     }
 
     init() {
@@ -33,12 +33,12 @@ private extension SudokuController {
         if let lastIndex = model.lastUnguessedIndex {
             for index in 0..<lastIndex-1 {
                 let isClue = model.cells[index].isClue
-                if !isClue && model.debugAnswers[index] != 5 {
-                    model.guess(index, value: model.debugAnswers[index])
+                if !isClue && model.answer(at: index) != 5 {
+                    model.guess(index, value: model.answer(at: index))
                 }
             }
             selectedIndex = lastIndex - 1
-            highlightedNumber = model.debugAnswers[lastIndex - 1]
+            highlightedNumber = model.answer(at: selectedIndex)
         }
     }
 
@@ -61,6 +61,14 @@ private extension SudokuController {
             }
             .store(in: &subscriptions)
 
+        center.publisher(for: PlayerAction.markerGuess, object: nil)
+            .map({ ($0.object as! NSNumber).intValue })
+            .sink { [weak self] number in
+                guard let self = self else { return }
+                self.handleMark(number: number)
+            }
+            .store(in: &subscriptions)
+
         center.publisher(for: PlayerAction.cellTap, object: nil)
             .map({ ($0.object as! NSNumber).intValue })
             .sink { [weak self] index in
@@ -78,7 +86,12 @@ private extension SudokuController {
     }
 
     private func calcViewModel() {
-        viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber) }
+        viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, cellMarkers: model.markers[$0]) }
+    }
+
+    private func handleMark(number: Int) {
+        model.mark(selectedIndex, number: number)
+        undoManager?.currentItem = undoState
     }
 
     private func handleGuess(number: Int) {
@@ -96,7 +109,7 @@ private extension SudokuController {
         let sortedLastIndexes = lastIndexes.sorted { lhs, rhs in
             SudokuConstants.indexToGrid(lhs) < SudokuConstants.indexToGrid(rhs)
         }
-        let lastNumber = model.debugAnswers[sortedLastIndexes[0]]
+        let lastNumber = model.answer(at: sortedLastIndexes[0])
         let duration = 0.5
         highlightedNumber = lastNumber
         for index in sortedLastIndexes {
@@ -129,7 +142,7 @@ private extension SudokuController {
         if let item = undoManager?.currentItem {
             selectedIndex = item.selectedIndex
             highlightedNumber = item.highlightedNumber
-            model.undo(guesses: item.guesses)
+            model.undo(markers: item.markers, guesses: item.guesses)
             calcViewModel()
         }
     }
@@ -143,6 +156,7 @@ extension Notification.Name {
 class PlayerAction: ObservableObject {
     let center = NotificationCenter.default
     static let numberGuess = Notification.Name("ui_numberGuess")
+    static let markerGuess = Notification.Name("ui_markerGuess")
     static let cellTap = Notification.Name("ui_cellTap")
     static let undo = Notification.Name("ui_undo")
     static let almostSolve = Notification.Name("ui_almostSolve")

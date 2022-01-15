@@ -5,4 +5,5 @@ struct CellModel: Codable {
     let value: Int?
     let isCorrect: Bool
     let conflicts: Bool
+    var markers: [Bool]
 }
