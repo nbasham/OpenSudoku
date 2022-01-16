@@ -44,7 +44,7 @@ struct CellView: View {
 
 struct CellView_Previews: PreviewProvider {
     static var previews: some View {
-        CellView(model: CellViewModel(id: 0, fontWeight: .regular, color: .primary, value: "9", backgroundColor: .clear, markers: MarkerViewModel.sample))
+        CellView(model: CellViewModel.sample)
             .frame(width: 44, height: 44)
     }
 }

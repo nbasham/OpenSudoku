@@ -86,7 +86,7 @@ private extension SudokuController {
     }
 
     private func calcViewModel() {
-        viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, cellMarkers: model.markers[$0], isConflict: model.isConflict) }
+        viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, cellMarkers: model.markers[$0], isConflict: model.isConflict, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber) }
     }
 
     private func handleMark(number: Int) {

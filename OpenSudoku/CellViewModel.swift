@@ -35,13 +35,13 @@ struct MarkerViewModel: Identifiable {
         MarkerViewModel(id: 6, number: nil),
         MarkerViewModel(id: 7, number: nil),
         MarkerViewModel(id: 8, number: nil),
-        MarkerViewModel(id: 9, number: nil)
+        MarkerViewModel(id: 9, number: 9)
     ]
 }
 
 
 extension CellViewModel {
-    init(id: Int, model: CellModel, selectedIndex: Int, highlightedNumber: Int?, cellMarkers: [Bool], isConflict: (Int, Int) -> Bool) {
+    init(id: Int, model: CellModel, cellMarkers: [Bool], isConflict: (Int, Int) -> Bool, selectedIndex: Int, highlightedNumber: Int?) {
         self.id = id
         var conflict = false
         if let modelValue = model.value {
@@ -58,14 +58,6 @@ extension CellViewModel {
         fontWeight = model.isClue ? .bold : .regular
         backgroundColor = CellViewModel.bgColor(id, value: model.value, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber)
 
-//        let isConflict: (Int, Int) -> Bool  = { _, _ in
-//            return false
-//        }
-//        let markerColor: (Int, Int) -> (Color)  = {  index, number in
-//            guard cellMarkers[number-1] else { return .primary }
-//            let conflicts = isConflict(id, number)
-//            return conflicts ? .red : .primary
-//        }
         let markerValue: (Int, Int) -> (Int?)  = {  index, number in
             guard cellMarkers[number-1] else { return nil }
             return number
@@ -76,9 +68,6 @@ extension CellViewModel {
     private static func bgColor(_ index: Int, value: Int?, selectedIndex: Int, highlightedNumber: Int?) -> Color {
         var color = Color.clear
 
-//        if SudokuConstants.indexToGrid(index) % 2 != 0 {
-//            color = .gray
-//        }
         if value != nil && value == highlightedNumber {
             color = .accentColor.opacity(0.7)
         }
@@ -87,4 +76,6 @@ extension CellViewModel {
         }
         return color
     }
+
+    static let sample = CellViewModel(id: 0, fontWeight: .regular, color: .primary, value: "5", backgroundColor: .clear, markers: MarkerViewModel.sample)
 }
