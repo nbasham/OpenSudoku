@@ -34,6 +34,7 @@ struct CellView: View {
                 ZStack {
                     Text("\(marker.value)")
                         .font(.system(size: marker.fontSize))
+                        .foregroundColor(marker.color)
                   }
                     .aspectRatio(1, contentMode: .fit)
                  }

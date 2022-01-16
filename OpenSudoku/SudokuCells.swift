@@ -110,12 +110,25 @@ extension SudokuCells {
         }
         return true
     }
+
+    func isConflict(_ index: Int, value: Int?) -> Bool {
+        guard let value = value else { return false }
+        for indexes in [SudokuConstants.rowIndexes(index),
+                        SudokuConstants.colIndexes(index),
+                        SudokuConstants.gridIndexes(index)] {
+            let unique = indexes.filter { $0 != index }.allSatisfy { displayValue($0) != value }
+            if unique == false {
+                return true
+            }
+        }
+        return false
+    }
 }
 
 private extension SudokuCells {
 
     func value(_ index: Int) -> CellModel {
-        CellModel(isClue: isClue(index), value: displayValue(index), isCorrect: isCorrect(index), conflicts: isConflict(index, value: displayValue(index)), markers: markers[index])
+        CellModel(isClue: isClue(index), value: displayValue(index), isCorrect: isCorrect(index), markers: markers[index])
     }
 
     func isClue(_ index: Int) -> Bool {
@@ -129,19 +142,6 @@ private extension SudokuCells {
     func isCorrect(_ index: Int) -> Bool {
         guard isGuess(index) else { return true }
         return answers[index] == guesses[index]
-    }
-
-    func isConflict(_ index: Int, value: Int?) -> Bool {
-        guard let value = value else { return false }
-        for indexes in [SudokuConstants.rowIndexes(index),
-                        SudokuConstants.colIndexes(index),
-                        SudokuConstants.gridIndexes(index)] {
-            let unique = indexes.filter { $0 != index }.allSatisfy { displayValue($0) != value }
-            if unique == false {
-                return true
-            }
-        }
-        return false
     }
 
     func displayValue(_ index: Int) -> Int? {

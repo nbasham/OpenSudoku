@@ -16,34 +16,41 @@ struct MarkerViewModel: Identifiable {
     let value: String
     let fontSize: CGFloat = 9
 
-    init(id: Int, color: Color = .primary, value: String = "") {
+    init(id: Int, number: Int?, conflicts: Bool = false) {
         self.id = id
-        self.color = color
-        self.value = value
+        self.color = conflicts ? .red : .primary
+        if let number = number {
+            self.value = "\(number)"
+        } else {
+            self.value = ""
+        }
     }
+
     static let sample: [MarkerViewModel] = [
-        MarkerViewModel(id: 1, color: .primary, value: ""),
-        MarkerViewModel(id: 2, color: .primary, value: ""),
-        MarkerViewModel(id: 3, color: .red, value: "3"),
-        MarkerViewModel(id: 4, color: .primary, value: "4"),
-        MarkerViewModel(id: 5, color: .primary, value: ""),
-        MarkerViewModel(id: 6, color: .primary, value: ""),
-        MarkerViewModel(id: 7, color: .primary, value: ""),
-        MarkerViewModel(id: 8, color: .primary, value: ""),
-        MarkerViewModel(id: 9, color: .primary, value: "")
+        MarkerViewModel(id: 1, number: nil),
+        MarkerViewModel(id: 2, number: nil),
+        MarkerViewModel(id: 3, number: 3, conflicts: true),
+        MarkerViewModel(id: 4, number: 4),
+        MarkerViewModel(id: 5, number: nil),
+        MarkerViewModel(id: 6, number: nil),
+        MarkerViewModel(id: 7, number: nil),
+        MarkerViewModel(id: 8, number: nil),
+        MarkerViewModel(id: 9, number: nil)
     ]
 }
 
 
 extension CellViewModel {
-    init(id: Int, model: CellModel, selectedIndex: Int, highlightedNumber: Int?, cellMarkers: [Bool]) {
+    init(id: Int, model: CellModel, selectedIndex: Int, highlightedNumber: Int?, cellMarkers: [Bool], isConflict: (Int, Int) -> Bool) {
         self.id = id
+        var conflict = false
         if let modelValue = model.value {
             value = "\(modelValue)"
+            conflict = isConflict(id, modelValue)
         } else {
             value = ""
         }
-        if !model.isCorrect || model.conflicts {
+        if !model.isCorrect || conflict {
             color = .red
         } else {
             color = .primary
@@ -51,19 +58,19 @@ extension CellViewModel {
         fontWeight = model.isClue ? .bold : .regular
         backgroundColor = CellViewModel.bgColor(id, value: model.value, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber)
 
-        let isConflict: (Int, Int) -> Bool  = { _, _ in
-            return false
+//        let isConflict: (Int, Int) -> Bool  = { _, _ in
+//            return false
+//        }
+//        let markerColor: (Int, Int) -> (Color)  = {  index, number in
+//            guard cellMarkers[number-1] else { return .primary }
+//            let conflicts = isConflict(id, number)
+//            return conflicts ? .red : .primary
+//        }
+        let markerValue: (Int, Int) -> (Int?)  = {  index, number in
+            guard cellMarkers[number-1] else { return nil }
+            return number
         }
-        let markerColor: (Int, Int) -> (Color)  = {  index, number in
-            guard cellMarkers[number-1] else { return .primary }
-            let conflicts = isConflict(id, number)
-            return conflicts ? .red : .primary
-        }
-        let markerValue: (Int, Int) -> (String)  = {  index, number in
-            guard cellMarkers[number-1] else { return "" }
-            return "\(number)"
-        }
-        markers = (1...9).map { MarkerViewModel(id: $0, color: markerColor(id, $0), value: markerValue(id, $0))}
+        markers = (1...9).map { MarkerViewModel(id: $0, number: markerValue(id, $0), conflicts: isConflict(id, $0))}
     }
 
     private static func bgColor(_ index: Int, value: Int?, selectedIndex: Int, highlightedNumber: Int?) -> Color {

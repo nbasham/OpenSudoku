@@ -15,13 +15,33 @@ class SudokuModelTests: XCTestCase {
         for index in 0..<81 {
             let isClue = model.cells[index].isClue
             if isClue { continue }
-            if model.debugAnswers[index] != 4 {
-                model.guess(index, value: model.debugAnswers[index])
+            if model.answer(at: index) != 4 {
+                model.guess(index, value: model.answer(at: index))
             } else {
                 count += 1
             }
         }
         XCTAssertEqual(count, model.lastNumberIndexes?.count)
+    }
+
+    func testMark() throws {
+        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
+        let model = SudokuCells()
+        model.startGame(puzzle: puzzleSource.next())
+        XCTAssertFalse(model.cells[79].isClue)
+        let conflictIndexes = [1,2,3,6,8,9]
+        for number in 1...9 {
+            if conflictIndexes.contains(number) {
+                XCTAssertTrue(model.isConflict(79, value: number))
+            } else {
+                XCTAssertFalse(model.isConflict(79, value: number))
+            }
+        }
+        XCTAssertFalse(model.cells[0].markers[0])
+        model.mark(0, number: 1)
+        XCTAssertTrue(model.cells[0].markers[0])
+        model.mark(0, number: 1)
+        XCTAssertFalse(model.cells[0].markers[0])
     }
 
     func testIsSolved() throws {
@@ -32,11 +52,11 @@ class SudokuModelTests: XCTestCase {
         for index in 0..<79 {
             let isClue = model.cells[index].isClue
             if !isClue {
-                model.guess(index, value: model.debugAnswers[index])
+                model.guess(index, value: model.answer(at: index))
             }
         }
         XCTAssertFalse(model.isSolved)
-        model.guess(79, value: model.debugAnswers[79])
+        model.guess(79, value: model.answer(at: 79))
         XCTAssertTrue(model.isSolved)
     }
 
@@ -45,9 +65,10 @@ class SudokuModelTests: XCTestCase {
         let model = SudokuCells()
         model.startGame(puzzle: puzzleSource.next())
         model.guess(0, value: 9)
-        XCTAssertTrue(model.cells[0].conflicts)
+        XCTAssertTrue(model.isConflict(0, value: 9))
         model.guess(0, value: 4)
-        XCTAssertFalse(model.cells[0].conflicts)
+        XCTAssertFalse(model.isConflict(0, value: 4))
+        XCTAssertFalse(model.isConflict(0, value: 3))
     }
 
     func testCorrect() throws {
@@ -90,7 +111,7 @@ class SudokuModelTests: XCTestCase {
         for index in 0..<79 {
             let isClue = model.cells[index].isClue
             if !isClue {
-                model.guess(index, value: model.debugAnswers[index])
+                model.guess(index, value: model.answer(at: index))
             }
         }
         XCTAssertEqual(79, model.firstUnguessedIndex!)
