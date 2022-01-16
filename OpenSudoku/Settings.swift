@@ -5,5 +5,15 @@ class Settings: ObservableObject {
     @AppStorage("completeLastNumber") var completeLastNumber: Bool = true
     @AppStorage("useSound") var useSound: Bool = true
     @AppStorage("useColor") var useColor: Bool = false
-    @AppStorage("difficultyLevel") var difficultyLevel: Int = 0
+    @Published var difficultyLevel: PuzzleDifficultyLevel  {
+        didSet {
+            objectWillChange.send()
+            UserDefaults.standard.set(difficultyLevel.rawValue, forKey: "difficultyLevel")
+        }
+    }
+
+    init() {
+        let level = UserDefaults.standard.integer(forKey: "difficultyLevel")
+        difficultyLevel = PuzzleDifficultyLevel(rawValue: level) ?? .easy
+    }
 }

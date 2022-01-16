@@ -1,6 +1,6 @@
 import Foundation
 
-enum PuzzleDifficultyLevel: Int {
+enum PuzzleDifficultyLevel: Int, CaseIterable {
 
     case easy, medium, hard, evil
 
@@ -19,6 +19,18 @@ enum PuzzleDifficultyLevel: Int {
         }
     }
 
+    var numClues: Int {
+        switch self {
+            case .easy:
+                return 36
+            case .medium:
+                return 33
+            case .hard:
+                return 30
+            case .evil:
+                return 27
+        }
+    }
 }
 
 extension PuzzleDifficultyLevel: CustomStringConvertible {

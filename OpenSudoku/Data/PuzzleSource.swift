@@ -1,20 +1,22 @@
 import Foundation
 
 protocol PuzzleSource {
-    func next() -> [Int]
-    func setDifficultyLevel(_ level: PuzzleDifficultyLevel)
+    func next(level: PuzzleDifficultyLevel) -> [Int]
+}
+
+extension PuzzleSource {
+    static func stringToPuzzle(_ string: String) -> [Int] {
+        string.split(separator: ",").map { String($0) }.map { Int($0)! }
+    }
 }
 
 class FilePuzzleSource: PuzzleSource {
     let iterator = PuzzleIterator()
 
-    func setDifficultyLevel(_ level: PuzzleDifficultyLevel) {
+    func next(level: PuzzleDifficultyLevel) -> [Int] {
         iterator.setLevel(level: level)
-    }
-
-    func next() -> [Int] {
         guard let puzzleString = iterator.next() else { fatalError() }
-        return FilePuzzleSource.stringToPuzzle(puzzleString)
+        return Self.stringToPuzzle(puzzleString)
     }
 
     static func stringToPuzzle(_ string: String) -> [Int] {
@@ -29,10 +31,8 @@ class TestPuzzleSource: PuzzleSource {
         self.puzzle = puzzle
     }
 
-    func setDifficultyLevel(_ level: PuzzleDifficultyLevel) {}
-
-    func next() -> [Int] {
-        FilePuzzleSource.stringToPuzzle(puzzle)
+    func next(level: PuzzleDifficultyLevel) -> [Int] {
+        Self.stringToPuzzle(puzzle)
     }
 }
 

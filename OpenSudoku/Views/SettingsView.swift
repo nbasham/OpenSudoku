@@ -18,9 +18,11 @@ struct SettingsView: View {
                     HStack {
                         Text("Easy")
                             .foregroundColor(.secondary)
-                        Slider(value: $sliderValue, in: 0...3, step: 1) { b in
-                            guard b else { return }
-                            settings.difficultyLevel = Int(sliderValue)
+                        Slider(value: $sliderValue, in: 0...3, step: 1) { _ in
+                            settings.difficultyLevel = PuzzleDifficultyLevel(rawValue: Int(sliderValue))!
+                        }
+                        .onAppear {
+                            self.sliderValue = Double(settings.difficultyLevel.rawValue)
                         }
                         Text("Evil")
                             .foregroundColor(.secondary)

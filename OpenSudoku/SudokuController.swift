@@ -24,7 +24,7 @@ class SudokuController: ObservableObject {
     }
 
     func startGame() {
-        model.startGame(puzzle: puzzleSource.next())
+        model.startGame(puzzle: puzzleSource.next(level: settings.difficultyLevel))
         selectedIndex = model.firstUnguessedIndex ?? 0
         undoManager = UndoHistory(initialValue: undoState)
     }
@@ -50,6 +50,14 @@ private extension SudokuController {
             .dropFirst()
             .sink { [weak self] obj in
                 self?.calcViewModel()
+            }
+            .store(in: &subscriptions)
+
+        settings.$difficultyLevel
+            .receive(on: RunLoop.main)
+            .dropFirst()
+            .sink { [weak self] obj in
+                self?.startGame()
             }
             .store(in: &subscriptions)
 

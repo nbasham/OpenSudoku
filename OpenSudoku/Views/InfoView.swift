@@ -9,7 +9,7 @@ struct InfoView: View {
             Text("00:00")
                 .font(.system(size: fontSize, weight: .regular, design: .monospaced))
             Spacer()
-            Text("\(settings.difficultyLevel)")
+            Text(settings.difficultyLevel.description.uppercased())
                 .font(.system(size: fontSize, weight: .regular, design: .default))
             Spacer()
             undoButton
