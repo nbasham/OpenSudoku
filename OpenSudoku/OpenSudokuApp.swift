@@ -15,6 +15,7 @@ struct OpenSudokuApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(controller)
+                .environmentObject(controller.settings)
                 .onAppear {
                     controller.startGame()
                 }

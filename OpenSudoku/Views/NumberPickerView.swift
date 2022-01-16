@@ -15,14 +15,14 @@ struct NumberPickerView: View {
                                 .padding()
                             UsageView(number: number)
                                 .padding(4)
+                                .padding(.trailing)
                         }
                     }
                 }
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .foregroundColor(.clear)
-                        .border(Color.accentColor, width: 1)
+                .background(
+                    Color(.systemGray5)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 9))
             }
         }
     }

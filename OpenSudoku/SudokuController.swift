@@ -7,9 +7,11 @@ enum GameEvent {
 class SudokuController: ObservableObject {
     let model = SudokuCells()
     @Published var viewModel = [CellViewModel]()
+    @Published var settings = Settings()
     @Published var selectedIndex = 0
     @Published var highlightedNumber: Int? = nil
-    private let puzzleSource: PuzzleSource = TestPuzzleSource()
+    @Published var showSettings = false
+    private let puzzleSource: PuzzleSource = FilePuzzleSource()
     private var subscriptions = Set<AnyCancellable>()
     private var undoManager: UndoHistory<UndoState>?
     let eventPublisher = PassthroughSubject<GameEvent, Never>()
@@ -80,13 +82,26 @@ private extension SudokuController {
             .sink { _ in self.undo() }
             .store(in: &subscriptions)
 
+        center.publisher(for: PlayerAction.showSettings, object: nil)
+            .sink { _ in self.showSettings = true }
+            .store(in: &subscriptions)
+
+        center.publisher(for: PlayerAction.settingsDismiss, object: nil)
+            .sink { _ in self.handleSettingsDismiss() }
+            .store(in: &subscriptions)
+
         center.publisher(for: PlayerAction.almostSolve, object: nil)
             .sink { _ in self.almostSolve() }
             .store(in: &subscriptions)
     }
 
     private func calcViewModel() {
-        viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, cellMarkers: model.markers[$0], isConflict: model.isConflict, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber) }
+        viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, cellMarkers: model.markers[$0], isConflict: model.isConflict, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, showIncorrect: settings.showIncorrect) }
+    }
+
+    private func handleSettingsDismiss() {
+        calcViewModel()
+        //  TODO InfoView not updated with new level
     }
 
     private func handleMark(number: Int) {
@@ -99,8 +114,10 @@ private extension SudokuController {
         undoManager?.currentItem = undoState
         if model.isSolved {
             eventPublisher.send(.solved)
-        } else if let lastIndexes = model.lastNumberIndexes {
-            autofillLastNumber(lastIndexes)
+        } else if settings.completeLastNumber {
+            if let lastIndexes = model.lastNumberIndexes {
+                autofillLastNumber(lastIndexes)
+            }
         }
     }
 
@@ -159,5 +176,7 @@ class PlayerAction: ObservableObject {
     static let markerGuess = Notification.Name("ui_markerGuess")
     static let cellTap = Notification.Name("ui_cellTap")
     static let undo = Notification.Name("ui_undo")
+    static let showSettings = Notification.Name("ui_showSettings")
+    static let settingsDismiss = Notification.Name("ui_settingsDismiss")
     static let almostSolve = Notification.Name("ui_almostSolve")
 }

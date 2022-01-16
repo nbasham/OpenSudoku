@@ -2,10 +2,15 @@ import Foundation
 
 protocol PuzzleSource {
     func next() -> [Int]
+    func setDifficultyLevel(_ level: PuzzleDifficultyLevel)
 }
 
 class FilePuzzleSource: PuzzleSource {
     let iterator = PuzzleIterator()
+
+    func setDifficultyLevel(_ level: PuzzleDifficultyLevel) {
+        iterator.setLevel(level: level)
+    }
 
     func next() -> [Int] {
         guard let puzzleString = iterator.next() else { fatalError() }
@@ -23,6 +28,8 @@ class TestPuzzleSource: PuzzleSource {
     init(puzzle: String = samplePuzzleData) {
         self.puzzle = puzzle
     }
+
+    func setDifficultyLevel(_ level: PuzzleDifficultyLevel) {}
 
     func next() -> [Int] {
         FilePuzzleSource.stringToPuzzle(puzzle)

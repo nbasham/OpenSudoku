@@ -9,15 +9,27 @@ struct SudokuPlayView: View {
 
     var body: some View {
         VStack(spacing: 32) {
-            MarkerPickerView()
-            ZStack {
-                BoardView()
-                CellsView()
+            HStack {
+                Spacer()
+                Button {
+                    PlayerAction.showSettings.send()
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .imageScale(.large)
+                }
             }
-
+            VStack {
+                ZStack {
+                    BoardView()
+                    CellsView()
+                }
+                InfoView()
+            }
             NumberPickerView()
+            MarkerPickerView()
         }
         .padding(.horizontal)
+        .padding(.bottom)
         .alert("Play Again", isPresented: $showSolvedAlert) {
             Button("OK", role: .cancel) { controller.startGame() }
         }
@@ -27,6 +39,12 @@ struct SudokuPlayView: View {
                     showSolvedAlert = true
             }
         }
+        .sheet(isPresented: $controller.showSettings) {
+            PlayerAction.settingsDismiss.send()
+        } content: {
+            SettingsView()
+        }
+
     }
 }
 

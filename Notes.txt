@@ -1,0 +1,29 @@
+enum GameEvent {
+    case solved, settingsDismissed
+}
+
+
+    var level: PuzzleDifficultyLevel {
+        get {
+            PuzzleDifficultyLevel(rawValue: difficultyLevel)!
+        }
+        set {
+            objectWillChange.send()
+            difficultyLevel = newValue.rawValue
+        }
+    }
+
+    private func handleSettingsDismiss() {
+        calcViewModel()
+        //  TODO InfoView not updated with new level
+        puzzleSource.setDifficultyLevel(settings.level)
+        eventPublisher.send(.settingsDismissed)
+    }
+
+        .onReceive(controller.eventPublisher) { eventType in
+            switch eventType {
+                case .settingsDismissed:
+                    level = settings.level.description.uppercased()
+                default: break
+            }
+        }
