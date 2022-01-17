@@ -4,39 +4,54 @@ protocol PuzzleSource {
     func next(level: PuzzleDifficultyLevel) -> [Int]
 }
 
-extension PuzzleSource {
-    static func stringToPuzzle(_ string: String) -> [Int] {
-        string.split(separator: ",").map { String($0) }.map { Int($0)! }
-    }
+protocol PuzzleIteratorSource {
+    func indexKey(for level: PuzzleDifficultyLevel) -> String
+    func puzzles(for level: PuzzleDifficultyLevel) -> [String]
 }
 
-class FilePuzzleSource: PuzzleSource {
-    let iterator = PuzzleIterator()
-
+extension PuzzleIteratorSource {
     func next(level: PuzzleDifficultyLevel) -> [Int] {
-        iterator.setLevel(level: level)
+        let key = indexKey(for: level)
+        let puzzles = puzzles(for: level)
+        print("Iterator for key \(key) level \(level)")
+        let iterator = PuzzleIterator(puzzles: puzzles, key: key)
         guard let puzzleString = iterator.next() else { fatalError() }
         return Self.stringToPuzzle(puzzleString)
     }
-
     static func stringToPuzzle(_ string: String) -> [Int] {
         string.split(separator: ",").map { String($0) }.map { Int($0)! }
     }
 }
 
-class TestPuzzleSource: PuzzleSource {
-    let puzzle: String
-
-    init(puzzle: String = samplePuzzleData) {
-        self.puzzle = puzzle
+class FilePuzzleSource: PuzzleSource, PuzzleIteratorSource {
+    func indexKey(for level: PuzzleDifficultyLevel) -> String {
+        switch level {
+            case .easy:
+                return "puzzles_easy_key"
+            case .medium:
+                return "puzzles_medium_key"
+            case .hard:
+                return "puzzles_hard_key"
+            case .evil:
+                return "puzzles_evil_key"
+        }
     }
 
-    func next(level: PuzzleDifficultyLevel) -> [Int] {
-        Self.stringToPuzzle(puzzle)
+    lazy var easyPuzzles: [String] = Bundle.main.decode([String].self, from: "puzzles_easy.json")
+    lazy var mediumPuzzles: [String] = Bundle.main.decode([String].self, from: "puzzles_medium.json")
+    lazy var hardPuzzles: [String] = Bundle.main.decode([String].self, from: "puzzles_hard.json")
+    lazy var evilPuzzles: [String] = Bundle.main.decode([String].self, from: "puzzles_evil.json")
+
+    func puzzles(for level: PuzzleDifficultyLevel) -> [String] {
+        switch level {
+            case .easy:
+                return easyPuzzles
+            case .medium:
+                return mediumPuzzles
+            case .hard:
+                return hardPuzzles
+            case .evil:
+                return evilPuzzles
+        }
     }
 }
-
-//  swiftlint:disable:next line_length
-public let samplePuzzleData = "4,2,1,18,3,5,6,7,8,9,7,17,1,6,4,12,11,5,3,5,15,17,7,11,18,1,13,7,8,3,4,10,18,14,15,2,11,6,13,5,8,7,1,3,9,1,9,5,6,2,12,4,8,16,8,4,7,3,18,10,2,5,15,5,12,2,16,4,15,17,18,10,15,10,9,2,5,17,7,4,12"
-//  swiftlint:disable:next line_length
-public let hardPuzzleData = "4,2,1,18,3,5,6,7,8,9,7,17,1,6,4,12,11,5,3,5,15,17,7,11,18,1,13,7,8,3,4,10,18,14,15,2,11,6,13,5,8,7,1,3,9,1,9,5,6,2,12,4,8,16,8,4,7,3,18,10,2,5,15,5,12,2,16,4,15,17,18,10,15,10,9,2,5,17,7,4,12"

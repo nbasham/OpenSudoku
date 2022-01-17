@@ -3,12 +3,12 @@ import Combine
 @testable import OpenSudoku
 
 class SudokuModelTests: XCTestCase {
-    //  swiftlint:disable:next line_length
-    public let unitTestPuzzleData = "4,2,1,18,3,5,6,7,8,9,7,17,1,6,4,12,11,5,3,5,15,17,7,11,18,1,13,7,8,3,4,10,18,14,15,2,11,6,13,5,8,7,1,3,9,1,9,5,6,2,12,4,8,16,8,4,7,3,18,10,2,5,15,5,12,2,16,4,15,17,18,10,15,10,9,2,5,17,7,4,12"
+    static private let unitTestPuzzleData = "4,2,1,18,3,5,6,7,8,9,7,17,1,6,4,12,11,5,3,5,15,17,7,11,18,1,13,7,8,3,4,10,18,14,15,2,11,6,13,5,8,7,1,3,9,1,9,5,6,2,12,4,8,16,8,4,7,3,18,10,2,5,15,5,12,2,16,4,15,17,18,10,15,10,9,2,5,17,7,4,12"
+    private let puzzles = TestPuzzleSource.stringToPuzzle(unitTestPuzzleData)
 
     func testLastNumberIndexes() throws {
         var count = 0
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
+        let puzzleSource: PuzzleSource = TestPuzzleSource()
         let model = SudokuCells()
         model.startGame(puzzle: puzzleSource.next(level: .easy))
         XCTAssertNil(model.lastNumberIndexes)
@@ -25,9 +25,8 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testMark() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
         let model = SudokuCells()
-        model.startGame(puzzle: puzzleSource.next(level: .easy))
+        model.startGame(puzzle: puzzles)
         XCTAssertFalse(model.cells[79].isClue)
         let conflictIndexes = [1,2,3,6,8,9]
         for number in 1...9 {
@@ -45,9 +44,8 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testIsSolved() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
         let model = SudokuCells()
-        model.startGame(puzzle: puzzleSource.next(level: .easy))
+        model.startGame(puzzle: puzzles)
         XCTAssertFalse(model.isSolved)
         for index in 0..<79 {
             let isClue = model.cells[index].isClue
@@ -61,9 +59,8 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testIsConflics() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
         let model = SudokuCells()
-        model.startGame(puzzle: puzzleSource.next(level: .easy))
+        model.startGame(puzzle: puzzles)
         model.guess(0, value: 9)
         XCTAssertTrue(model.isConflict(0, value: 9))
         model.guess(0, value: 4)
@@ -72,17 +69,16 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testCorrect() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
         let model = SudokuCells()
-        model.startGame(puzzle: puzzleSource.next(level: .easy))
+        model.startGame(puzzle: puzzles)
         model.guess(0, value: 1)
         XCTAssertFalse(model.cells[0].isCorrect)
-        model.guess(0, value: 4)
+        model.guess(0, value: model.answer(at: 0))
         XCTAssertTrue(model.cells[0].isCorrect)
     }
 
     func testToggle() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
+        let puzzleSource: PuzzleSource = TestPuzzleSource()
         let model = SudokuCells()
         model.startGame(puzzle: puzzleSource.next(level: .easy))
         model.guess(0, value: 1)
@@ -94,20 +90,22 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testFirstUnguessedIndex() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
+        let puzzleSource: PuzzleSource = TestPuzzleSource()
         let model = SudokuCells()
         model.startGame(puzzle: puzzleSource.next(level: .easy))
         XCTAssertEqual(0, model.firstUnguessedIndex!)
-        model.guess(0, value: 4)
-        model.guess(1, value: 2)
-        model.guess(2, value: 1)
-        XCTAssertEqual(4, model.firstUnguessedIndex!)
+        for index in 0..<9 {
+            let isClue = model.cells[index].isClue
+            if !isClue {
+                model.guess(index, value: model.answer(at: index))
+            }
+        }
+        XCTAssertTrue(model.firstUnguessedIndex! > 9)
     }
 
     func testFirstUnguessedIndex2() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
         let model = SudokuCells()
-        model.startGame(puzzle: puzzleSource.next(level: .easy))
+        model.startGame(puzzle: puzzles)
         for index in 0..<79 {
             let isClue = model.cells[index].isClue
             if !isClue {
@@ -118,7 +116,7 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testClues() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
+        let puzzleSource: PuzzleSource = TestPuzzleSource()
         let puzzle = puzzleSource.next(level: .easy)
         let model = SudokuCells()
         model.startGame(puzzle: puzzle)
@@ -129,7 +127,7 @@ class SudokuModelTests: XCTestCase {
     }
 
     func testGuesses() throws {
-        let puzzleSource: PuzzleSource = TestPuzzleSource(puzzle: unitTestPuzzleData)
+        let puzzleSource: PuzzleSource = TestPuzzleSource()
         let model = SudokuCells()
         model.startGame(puzzle: puzzleSource.next(level: .easy))
         for index in 0..<81 {
