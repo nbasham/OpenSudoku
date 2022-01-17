@@ -8,7 +8,7 @@
 import Foundation
 
 extension CellViewModel {
-    static let sample = CellViewModel(id: 0, fontWeight: .regular, color: .primary, value: "5", colorValue: .green, backgroundColor: .clear, markers: MarkerViewModel.sample)
+    static let sample = CellViewModel(id: 0, fontWeight: .regular, color: .primary, value: "5", colorValue: .black, colorOverlay: "X", backgroundColor: .clear, markers: MarkerViewModel.sample)
 }
 
 extension MarkerViewModel {

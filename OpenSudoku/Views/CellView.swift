@@ -26,13 +26,28 @@ struct CellView: View {
         )
     }
 
+    private func colorSymbol() -> some View {
+        ZStack {
+            Circle()
+                .foregroundColor(model.colorValue)
+                .padding(4)
+            if !model.colorOverlay.isEmpty {
+                Circle()
+                    .inset(by: 11)
+                    .foregroundColor(.white)
+                Circle()
+                    .inset(by: 12)
+                    .foregroundColor(.red)
+            }
+        }
+    }
+
+
     private func symbol() -> some View {
         Group {
             if settings.useColor {
-                Circle()
-                    .foregroundColor(model.colorValue)
-                    .padding(5)
-            } else {
+                colorSymbol()
+           } else {
                 Text(model.value)
                     .font(.system(size: model.fontSize, weight: model.fontWeight))
                     .foregroundColor(model.color)
@@ -70,7 +85,14 @@ struct CellView: View {
 
 struct CellView_Previews: PreviewProvider {
     static var previews: some View {
-        CellView(model: CellViewModel.sample)
+        let controller = SudokuController()
+        controller.settings.useColor = true
+        return CellView(model: CellViewModel.sample)
             .frame(width: 44, height: 44)
+            .environmentObject(controller)
+            .environmentObject(controller.settings)
+            .onAppear {
+                controller.startGame()
+            }
     }
 }

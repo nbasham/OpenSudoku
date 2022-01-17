@@ -8,6 +8,7 @@ struct CellViewModel: Identifiable {
     let color: Color
     let value: String
     let colorValue: Color
+    let colorOverlay: String
     let fontSize: CGFloat = 17
     let backgroundColor: Color
     let markers: [MarkerViewModel]
@@ -23,7 +24,8 @@ struct MarkerViewModel: Identifiable {
 
     init(id: Int, number: Int?, conflicts: Bool = false, showIncorrect: Bool = true) {
         self.id = id
-        self.color = conflicts && showIncorrect ? .red : .primary
+        let conflictsOrIncorrect = conflicts && showIncorrect
+        self.color = conflictsOrIncorrect ? .red : .primary
         if let number = number {
             self.value = "\(number)"
             colorValue = Color.sudoku(value: number)
@@ -47,11 +49,17 @@ extension CellViewModel {
             value = ""
             colorValue = .clear
         }
+        var tempColorOverlay = ""
         if !model.isCorrect || conflict {
             color = showIncorrect ? .red : .primary
+            if !model.isClue && model.value != nil {
+                tempColorOverlay = showIncorrect ? "x" : ""
+            }
         } else {
             color = .primary
         }
+        colorOverlay = tempColorOverlay
+
         fontWeight = model.isClue ? .bold : .regular
         backgroundColor = CellViewModel.bgColor(id, value: model.value, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber)
 
