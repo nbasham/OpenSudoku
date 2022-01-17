@@ -7,6 +7,7 @@ struct CellViewModel: Identifiable {
     let fontWeight: Font.Weight
     let color: Color
     let value: String
+    let colorValue: Color
     let fontSize: CGFloat = 17
     let backgroundColor: Color
     let markers: [MarkerViewModel]
@@ -16,6 +17,8 @@ struct MarkerViewModel: Identifiable {
     let id: Int
     let color: Color
     let value: String
+    let colorValue: Color
+    let colorImage: String
     let fontSize: CGFloat = 9
 
     init(id: Int, number: Int?, conflicts: Bool = false, showIncorrect: Bool = true) {
@@ -23,9 +26,12 @@ struct MarkerViewModel: Identifiable {
         self.color = conflicts && showIncorrect ? .red : .primary
         if let number = number {
             self.value = "\(number)"
+            colorValue = Color.sudoku(value: number)
         } else {
             self.value = ""
+            colorValue = .clear
         }
+        colorImage = conflicts ? "record.circle" : "circle.fill"
     }
 }
 
@@ -36,8 +42,10 @@ extension CellViewModel {
         if let modelValue = model.value {
             value = "\(modelValue)"
             conflict = isConflict(id, modelValue)
+            colorValue = Color.sudoku(value: modelValue)
         } else {
             value = ""
+            colorValue = .clear
         }
         if !model.isCorrect || conflict {
             color = showIncorrect ? .red : .primary

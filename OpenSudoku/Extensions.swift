@@ -1,4 +1,8 @@
-import Foundation
+import SwiftUI
+
+extension Color {
+    static func sudoku(value: Int) -> Color { Color("\(value)") }
+}
 
 //  Paul Hudson
 // swiftlint:disable line_length
