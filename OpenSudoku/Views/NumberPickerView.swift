@@ -18,6 +18,10 @@ struct NumberPickerView: View {
                             UsageView(number: number)
                                 .padding(4)
                                 .padding(.trailing)
+                                .onTapGesture {
+                                    PlayerAction.usageTap.send(obj: number)
+                                }
+
                         }
                     }
                 }

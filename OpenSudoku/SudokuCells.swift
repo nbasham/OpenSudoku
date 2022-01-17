@@ -48,7 +48,8 @@ class SudokuCells: ObservableObject {
         } else {
             removeValuesFromGrid(index, value)
             guesses[index] = value
-        }
+            clearGridRowColMarkers(index, value)
+       }
         markers[index] = Array(repeating: false, count: 9)
         calc()
     }
@@ -122,6 +123,14 @@ extension SudokuCells {
             }
         }
         return false
+    }
+
+    func clearGridRowColMarkers(_ index: Int, _ value: Int) {
+        for indexes in [SudokuConstants.rowIndexes(index),
+                        SudokuConstants.colIndexes(index),
+                        SudokuConstants.gridIndexes(index)] {
+            indexes.filter { $0 != index }.forEach { markers[$0][value-1] = false }
+        }
     }
 }
 

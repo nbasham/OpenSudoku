@@ -64,7 +64,7 @@ struct CellView: View {
                     .padding(1)
             } else {
                 Text("\(marker.value)")
-                    .font(.system(size: marker.fontSize))
+                    .font(.system(size: marker.fontSize, weight: .heavy, design: .monospaced))
                     .foregroundColor(marker.color)
             }
         }

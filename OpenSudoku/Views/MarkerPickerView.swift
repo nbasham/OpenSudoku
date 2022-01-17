@@ -36,7 +36,7 @@ struct MarkerPickerView: View {
             } else {
                 Text("\(number)")
                     .font(.system(size: 11))
-                    .padding(4)
+                    .padding(6)
             }
         }
     }

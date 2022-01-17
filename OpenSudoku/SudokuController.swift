@@ -101,10 +101,22 @@ private extension SudokuController {
         center.publisher(for: PlayerAction.almostSolve, object: nil)
             .sink { _ in self.almostSolve() }
             .store(in: &subscriptions)
+
+        center.publisher(for: PlayerAction.usageTap, object: nil)
+            .map({ ($0.object as! NSNumber).intValue })
+            .sink { number in
+                self.handleUsageTap(number: number)
+            }
+            .store(in: &subscriptions)
     }
 
     private func calcViewModel() {
         viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, cellMarkers: model.markers[$0], isConflict: model.isConflict, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, showIncorrect: settings.showIncorrect) }
+    }
+
+    private func handleUsageTap(number: Int) {
+        highlightedNumber = number
+        calcViewModel()
     }
 
     private func handleSettingsDismiss() {
@@ -186,5 +198,6 @@ class PlayerAction: ObservableObject {
     static let undo = Notification.Name("ui_undo")
     static let showSettings = Notification.Name("ui_showSettings")
     static let settingsDismiss = Notification.Name("ui_settingsDismiss")
+    static let usageTap = Notification.Name("ui_usageTap")
     static let almostSolve = Notification.Name("ui_almostSolve")
 }
