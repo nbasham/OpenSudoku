@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MarkerPickerView: View {
+    @EnvironmentObject var settings: Settings
+
     var body: some View {
         HStack {
 //            Image(systemName: "highlighter")
@@ -12,10 +14,10 @@ struct MarkerPickerView: View {
                     ZStack {
                         Circle()
                             .foregroundColor(Color(.systemGray5))
-                        Text("\(number)")
+                        symbol(number)
 //                            .foregroundColor(.primary)
                     }
-                    .aspectRatio(1, contentMode: .fill)
+                    .aspectRatio(1, contentMode: .fit)
                 }
 //                .padding(8)
             }
@@ -23,10 +25,32 @@ struct MarkerPickerView: View {
         }
         .frame(maxWidth: .infinity)
     }
+
+    private func symbol(_ number: Int) -> some View {
+        Group {
+            if settings.useColor {
+                Image(systemName: "circle.fill")
+                    .font(.system(size: 15))
+                    .foregroundColor(Color.sudoku(value: number))
+                    .padding(1)
+            } else {
+                Text("\(number)")
+                    .font(.system(size: 11))
+                    .padding(4)
+            }
+        }
+    }
 }
 
 struct MarkerPickerView_Previews: PreviewProvider {
     static var previews: some View {
-        MarkerPickerView()
+        let controller = SudokuController()
+        controller.settings.useColor = false
+        return MarkerPickerView()
+            .environmentObject(controller)
+            .environmentObject(controller.settings)
+            .onAppear {
+                controller.startGame()
+            }
     }
 }

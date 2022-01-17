@@ -4,6 +4,7 @@ struct UsageView: View {
     let number: Int
     @EnvironmentObject var controller: SudokuController
     @Environment(\.pixelLength) var pixelLength: CGFloat
+    @Environment(\.colorScheme) var colorScheme
     private let cols = Array(repeating: GridItem(.flexible(), spacing: 0), count: 3)
 
     var body: some View {
@@ -13,7 +14,7 @@ struct UsageView: View {
                     if controller.model.usage[number-1][cellIndex] {
                         Color.accentColor
                     } else {
-                        Color.clear
+                        Color(colorScheme == .dark ? .systemGray : .systemGray5)
                     }
                 }
                 .aspectRatio(1, contentMode: .fit)

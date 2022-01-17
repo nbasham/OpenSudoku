@@ -3,6 +3,7 @@ import SwiftUI
 struct BoardView: View {
     let borderWidth: CGFloat = 2
     private let cols = Array(repeating: GridItem(.flexible(), spacing: 2), count: 3)
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         ZStack {
@@ -10,14 +11,16 @@ struct BoardView: View {
 
                 ForEach((0...8), id: \.self) { gridIndex in
                     Rectangle()
-                        .fill(gridIndex%2==0 ? Color(.systemGray6) : Color(.systemGray5))
+                        .fill(gridIndex%2==0 ?
+                              Color(colorScheme == .dark ? .systemGray : .systemGray6) :
+                                Color(colorScheme == .dark ? .systemGray2 : .systemGray5))
                 }
                 .aspectRatio(1, contentMode: .fill)
             }
         }
         .padding(0)
         .background(
-            Color.black
+            Color.primary
                 .padding(-borderWidth)
         )
         .disabled(true)

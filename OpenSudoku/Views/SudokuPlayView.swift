@@ -44,17 +44,20 @@ struct SudokuPlayView: View {
         } content: {
             SettingsView()
         }
-
+        .accentColor(controller.settings.useColor ? .gray : .accentColor)
     }
 }
 
 struct SudokuView_Previews: PreviewProvider {
     static var previews: some View {
         let controller = SudokuController()
+        controller.settings.useColor = false
         return SudokuPlayView()
             .environmentObject(controller)
+            .environmentObject(controller.settings)
             .onAppear {
                 controller.startGame()
             }
+            .preferredColorScheme(.light)
     }
 }
