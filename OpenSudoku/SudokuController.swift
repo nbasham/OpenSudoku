@@ -134,7 +134,7 @@ private extension SudokuController {
     }
 
     private func handleGuess(number: Int) {
-        model.guess(selectedIndex, value: number)
+        model.guess(selectedIndex, value: number, showIncorrect: settings.showIncorrect)
         undoManager?.currentItem = undoState
         if model.isSolved {
             eventPublisher.send(.solved)
@@ -203,7 +203,9 @@ private extension SudokuController {
         let indexes = model.indexes(for: number)
         if indexes.count == 9 {
             animateCompletion(indexes) {
-                self.highlightedNumber = nil
+                if self.highlightedNumber == number {
+                    self.highlightedNumber = nil
+                }
                 self.calcViewModel()
             }
         }

@@ -40,7 +40,7 @@ class SudokuCells: ObservableObject {
         calc()
     }
 
-    func guess(_ index: Int, value: Int) {
+    func guess(_ index: Int, value: Int, showIncorrect: Bool = true) {
         guard !isClue(index) else { fatalError("Can't set a value on a clue.") }
         cells[index].markers = Array(repeating: false, count: 9)
         if guesses[index] == value {
@@ -48,7 +48,9 @@ class SudokuCells: ObservableObject {
         } else {
             removeValuesFromGrid(index, value)
             guesses[index] = value
-            clearGridRowColMarkers(index, value)
+            if isCorrect(index) || !showIncorrect {
+                clearGridRowColMarkers(index, value)
+            }
        }
         markers[index] = Array(repeating: false, count: 9)
         calc()
@@ -78,11 +80,14 @@ extension SudokuCells {
     }
 
     var onlyOneNumberRemains: Bool {
-        guard !hasIncorrectGuess else { return false }
-        let indexes = guesses.filter { $0 == nil }.compactMap { $0 }
-        guard indexes.count > 0 else { return false }
-        let lastNumber = answers[indexes[0]]
-        return indexes.allSatisfy { answers[$0] == lastNumber }
+        guard let firstIndex = firstUnguessedIndex else { return false }
+        let number = answers[firstIndex]
+        for (index, item) in guesses.enumerated() {
+            if isClue(index) { continue }
+            if item != nil && !isCorrect(index) { return false }
+            if item == nil && number != answers[index] { return false }
+        }
+        return true
     }
 
     /// If there are no incorrect answers and all of the unanswered cells are the same number, return their indexes.
