@@ -1,7 +1,5 @@
 import SwiftUI
 
-//let cellColors: Array<UIColor> = [UIColor.init(hex: "D62469"), UIColor.init(hex: "F87F1F"), UIColor.init(hex: "F9C71E"), UIColor.init(hex: "AFCE3B"), UIColor.init(hex: "187349"), UIColor.init(hex: "00ABED"), UIColor.init(hex: "0665AE"), UIColor.init(hex: "64095E"), UIColor.init(hex: "000000")];
-
 struct CellViewModel: Identifiable {
     let id: Int
     let fontWeight: Font.Weight

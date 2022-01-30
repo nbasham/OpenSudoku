@@ -15,10 +15,8 @@ class PuzzleIterator: IteratorProtocol {
         defer {
             if index < puzzles.count-1 {
                 index += 1
-                print("new index \(index)")
             } else {
                 index = 0
-                print("reset index \(index)")
             }
             UserDefaults.standard.set(index, forKey: key)
         }

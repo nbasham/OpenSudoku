@@ -1,6 +1,9 @@
 import Foundation
 import Combine
 
+enum AnimationType {
+    case completed(Int, Bool)
+}
 enum GameEvent {
     case solved
 }
@@ -11,6 +14,7 @@ class SudokuController: ObservableObject {
     @Published var selectedIndex = 0
     @Published var highlightedNumber: Int? = nil
     @Published var showSettings = false
+    let animationPublisher = PassthroughSubject<AnimationType, Never>()
     private let puzzleSource: PuzzleSource = FilePuzzleSource()
     private var subscriptions = Set<AnyCancellable>()
     private var undoManager: UndoHistory<UndoState>?
@@ -83,7 +87,7 @@ private extension SudokuController {
             .map({ ($0.object as! NSNumber).intValue })
             .sink { [weak self] index in
                 self?.handleCellTap(index)
-            }
+           }
             .store(in: &subscriptions)
 
         center.publisher(for: PlayerAction.undo, object: nil)
@@ -121,7 +125,7 @@ private extension SudokuController {
 
     private func handleSettingsDismiss() {
         calcViewModel()
-        //  TODO InfoView not updated with new level
+        //  TODO I don't think we need this event
     }
 
     private func handleMark(number: Int) {
@@ -134,30 +138,13 @@ private extension SudokuController {
         undoManager?.currentItem = undoState
         if model.isSolved {
             eventPublisher.send(.solved)
-        } else if settings.completeLastNumber {
-            if let lastIndexes = model.lastNumberIndexes {
-                autofillLastNumber(lastIndexes)
-            }
+        } else {
+            completed(index: selectedIndex, number: number)
         }
     }
 
-    private func autofillLastNumber(_ lastIndexes: [Int]) {
-        var count: Double = 1
-        let sortedLastIndexes = lastIndexes.sorted { lhs, rhs in
-            SudokuConstants.indexToGrid(lhs) < SudokuConstants.indexToGrid(rhs)
-        }
-        let lastNumber = model.answer(at: sortedLastIndexes[0])
-        let duration = 0.5
-        highlightedNumber = lastNumber
-        for index in sortedLastIndexes {
-            DispatchQueue.main.asyncAfter(deadline: .now() + count) { [index = index] in
-                self.model.guess(index, value: lastNumber)
-            }
-            count += duration
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(sortedLastIndexes.count)*duration + 1.0) {
-            self.eventPublisher.send(.solved)
-        }
+    var shouldAutofill: Bool {
+        settings.completeLastNumber && model.onlyOneNumberRemains
     }
 
     private func handleCellTap(_ index: Int) {
@@ -183,6 +170,84 @@ private extension SudokuController {
             calcViewModel()
         }
     }
+
+    //  Check if we should autofill the last number, if not, check if row, col, and or grid should be animated
+    private func completed(index: Int, number: Int) {
+        if shouldAutofill {
+            if let indexes = model.lastNumberIndexes {
+                let lastNumber = model.answer(at: indexes[0])
+                print("lastNumber \(lastNumber)")
+                print(indexes)
+                indexes.forEachAfter { i in
+                    self.model.guess(i, value: lastNumber)
+                }
+                animateLastNumber(indexes, number: lastNumber) {
+                    self.eventPublisher.send(.solved)
+                }
+                return
+            }
+        }
+
+        if model.isRowComplete(for: index) {
+            animateCompletion(SudokuConstants.rowIndexes(index))
+        }
+
+        if model.isColComplete(for: index) {
+            animateCompletion(SudokuConstants.colIndexes(index))
+        }
+
+        if model.isGridComplete(for: index) {
+            animateCompletion(SudokuConstants.gridIndexes(index))
+        }
+
+        let indexes = model.indexes(for: number)
+        if indexes.count == 9 {
+            animateCompletion(indexes) {
+                self.highlightedNumber = nil
+                self.calcViewModel()
+            }
+        }
+    }
+
+    private func animateLastNumber(_ indexes: [Int], number: Int, completion: (() -> ())? = nil) {
+        indexes.forEachAfter { index in
+            self.animationPublisher.send(.completed(index, true))
+        }
+        indexes.forEachAfter(startTime: 0.5) { index in
+            self.animationPublisher.send(.completed(index, false))
+        } completion: {
+            completion?()
+        }
+    }
+
+    private func animateCompletion(_ indexes: [Int], completion: (() -> ())? = nil) {
+        indexes.forEachAfter { index in
+            self.animationPublisher.send(.completed(index, true))
+        }
+        indexes.forEachAfter(startTime: 0.5) { index in
+            self.animationPublisher.send(.completed(index, false))
+        } completion: {
+            completion?()
+        }
+    }
+}
+
+extension Array where Element == Int {
+    // For each element in a collection perform a task after a linearly increasing interval
+    func forEachAfter(interval: Double = 0.1, startTime: Double = 0, task: @escaping (Int) -> (), completion: (() -> ())? = nil) {
+        for i in 0..<self.count {
+            let currInterval: Double = Double(i) * interval
+            DispatchQueue.main.asyncAfter(deadline: .now() + currInterval + startTime) { [i = i, value = self[i]] in
+                task(value)
+                let isLast = i == (self.count-1)
+                if isLast {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
+                        completion?()
+                    }
+                }
+           }
+        }
+    }
 }
 
 extension Notification.Name {
@@ -190,6 +255,7 @@ extension Notification.Name {
         NotificationCenter.default.post(name: self, object: obj)
     }
 }
+
 class PlayerAction: ObservableObject {
     let center = NotificationCenter.default
     static let numberGuess = Notification.Name("ui_numberGuess")

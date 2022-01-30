@@ -3,13 +3,24 @@ import SwiftUI
 struct CellView: View {
     let model: CellViewModel
     @Environment(\.pixelLength) var pixelLength: CGFloat
+    @EnvironmentObject var controller: SudokuController
     @EnvironmentObject var settings: Settings
+    @State private var animationAmount = 1.0
 
     var body: some View {
         ZStack {
             Color.clear
                 .contentShape(Rectangle()) // makes it touchable
             symbol()
+                .onReceive(controller.animationPublisher) { animationType in
+                    switch animationType {
+                        case let .completed(index, animating):
+                            if model.id == index {
+//                                print("WE HAVE ARRIVED \(index)")
+                                animationAmount = animating ? 2.0 : 1
+                            }
+                    }
+                }
         }
         .aspectRatio(1, contentMode: .fit)
         .onTapGesture {
@@ -53,6 +64,11 @@ struct CellView: View {
                     .foregroundColor(model.color)
             }
         }
+        .scaleEffect(animationAmount)
+        .animation(
+            .easeOut(duration: 0.5)
+            .repeatCount(1, autoreverses: false), value: animationAmount
+        )
     }
 
     private func markerSymbol(_ marker: MarkerViewModel) -> some View {

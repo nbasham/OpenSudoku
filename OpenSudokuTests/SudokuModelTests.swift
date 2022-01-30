@@ -8,9 +8,8 @@ class SudokuModelTests: XCTestCase {
 
     func testLastNumberIndexes() throws {
         var count = 0
-        let puzzleSource: PuzzleSource = TestPuzzleSource()
         let model = SudokuCells()
-        model.startGame(puzzle: puzzleSource.next(level: .easy))
+        model.startGame(puzzle: puzzles)
         XCTAssertNil(model.lastNumberIndexes)
         for index in 0..<81 {
             let isClue = model.cells[index].isClue

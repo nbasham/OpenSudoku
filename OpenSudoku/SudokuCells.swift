@@ -73,9 +73,20 @@ extension SudokuCells {
         (0...80).last(where: { guesses[$0] == nil })
     }
 
+    var hasIncorrectGuess: Bool {
+        !guesses.enumerated().allSatisfy { $1 == nil || $1 == answers[$0]}
+    }
+
+    var onlyOneNumberRemains: Bool {
+        guard !hasIncorrectGuess else { return false }
+        let indexes = guesses.filter { $0 == nil }.compactMap { $0 }
+        guard indexes.count > 0 else { return false }
+        let lastNumber = answers[indexes[0]]
+        return indexes.allSatisfy { answers[$0] == lastNumber }
+    }
+
     /// If there are no incorrect answers and all of the unanswered cells are the same number, return their indexes.
     var lastNumberIndexes: [Int]? {
-        guard !hasIncorrectGuess else { return nil }
         guard let firstUnguessedIndex = firstUnguessedIndex else { return nil }
         let answerOfFirstUnguessedCell = answers[firstUnguessedIndex]
         var result: [Int] = []
@@ -88,7 +99,26 @@ extension SudokuCells {
             }
         }
         guard !result.isEmpty else { return nil }
-        return result
+        return result.sorted { lhs, rhs in
+            SudokuConstants.indexToGrid(lhs) < SudokuConstants.indexToGrid(rhs)
+        }
+    }
+
+
+    func isRowComplete(for index: Int) -> Bool {
+        SudokuConstants.rowIndexes(index).allSatisfy { displayValue($0) != nil }
+    }
+
+    func isColComplete(for index: Int) -> Bool {
+        SudokuConstants.colIndexes(index).allSatisfy { displayValue($0) != nil }
+    }
+
+    func isGridComplete(for index: Int) -> Bool {
+        SudokuConstants.gridIndexes(index).allSatisfy { displayValue($0) != nil }
+    }
+
+    func indexes(for number: Int) -> [Int] {
+        SudokuConstants.CELLINDEXES.filter { displayValue($0) == number }
     }
 
     private func calcUsage() {
@@ -174,9 +204,5 @@ private extension SudokuCells {
                 }
             }
         }
-    }
-
-    var hasIncorrectGuess: Bool {
-        !guesses.enumerated().allSatisfy { $1 == nil || $1 == answers[$0]}
     }
 }
