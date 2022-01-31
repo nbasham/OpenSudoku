@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 enum AnimationType {
-    case completed(Int, Bool)
+    case completed(Int, Bool, Double)
 }
 enum GameEvent {
     case solved
@@ -190,16 +190,25 @@ private extension SudokuController {
 
     private func handleCellTap(_ index: Int) {
         if model.cells[index].isClue || model.cells[index].isCorrect {
-            if model.cells[index].value == highlightedNumber {
-                highlightedNumber = nil
-            } else {
-                highlightedNumber = model.cells[index].value
-            }
+            setHightlightNumber(model.cells[index].value)
         } else {
             selectedIndex = index
         }
         calcViewModel()
         undoManager?.currentItem = undoState
+    }
+
+    private func setHightlightNumber(_ number: Int?) {
+        if number == highlightedNumber {
+            highlightedNumber = nil
+        } else {
+            highlightedNumber = number
+            if lastPick == nil {
+                if let number = number {
+                    lastPick = LastPick(number: number)
+                }
+            }
+        }
     }
 
     private func undo() {
@@ -253,12 +262,16 @@ private extension SudokuController {
         }
     }
 
+    var maxAnimation: Double {
+        settings.useColor ? 1.25 : 2.0
+    }
+
     private func animateLastNumber(_ indexes: [Int], number: Int, completion: (() -> ())? = nil) {
         indexes.forEachAfter { index in
-            self.animationPublisher.send(.completed(index, true))
+            self.animationPublisher.send(.completed(index, true, self.maxAnimation))
         }
         indexes.forEachAfter(startTime: 0.5) { index in
-            self.animationPublisher.send(.completed(index, false))
+            self.animationPublisher.send(.completed(index, false, self.maxAnimation))
         } completion: {
             completion?()
         }
@@ -266,10 +279,10 @@ private extension SudokuController {
 
     private func animateCompletion(_ indexes: [Int], completion: (() -> ())? = nil) {
         indexes.forEachAfter { index in
-            self.animationPublisher.send(.completed(index, true))
+            self.animationPublisher.send(.completed(index, true, self.maxAnimation))
         }
         indexes.forEachAfter(startTime: 0.5) { index in
-            self.animationPublisher.send(.completed(index, false))
+            self.animationPublisher.send(.completed(index, false, self.maxAnimation))
         } completion: {
             completion?()
         }

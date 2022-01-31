@@ -14,9 +14,9 @@ struct CellView: View {
             symbol()
                 .onReceive(controller.animationPublisher) { animationType in
                     switch animationType {
-                        case let .completed(index, animating):
+                        case let .completed(index, animating, maxAnimation):
                             if model.id == index {
-                                animationAmount = animating ? 2.0 : 1
+                                animationAmount = animating ? maxAnimation : 1
                             }
                     }
                 }
@@ -43,7 +43,7 @@ struct CellView: View {
         ZStack {
             Circle()
                 .foregroundColor(model.colorValue)
-                .padding(4)
+                .padding(6)
             if !model.colorOverlay.isEmpty {
                 Circle()
                     .inset(by: 11)

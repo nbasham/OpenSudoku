@@ -38,9 +38,8 @@ struct NumberPickerView: View {
             if settings.useColor {
                 Group {
                     Image(systemName: "circle.fill")
-                        .font(.system(size: 21))
+                        .font(.system(size: 25))
                         .foregroundColor(Color.sudoku(value: number))
-//                        .padding(1)
                 }
                 .padding(.horizontal, 6)
                 .padding(.vertical, 8)
