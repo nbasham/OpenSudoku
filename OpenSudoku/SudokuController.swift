@@ -14,6 +14,8 @@ class SudokuController: ObservableObject {
     @Published var selectedIndex = 0
     @Published var highlightedNumber: Int? = nil
     @Published var showSettings = false
+    @Published var time = "00:00"
+    var timer = SecondsTimer()
     let animationPublisher = PassthroughSubject<AnimationType, Never>()
     private let puzzleSource: PuzzleSource = FilePuzzleSource()
     private var subscriptions = Set<AnyCancellable>()
@@ -32,6 +34,7 @@ class SudokuController: ObservableObject {
         model.startGame(puzzle: puzzleSource.next(level: settings.difficultyLevel))
         selectedIndex = model.firstUnguessedIndex ?? 0
         undoManager = UndoHistory(initialValue: undoState)
+        timer.start()
     }
 }
 
@@ -63,6 +66,23 @@ private extension SudokuController {
             .dropFirst()
             .sink { [weak self] obj in
                 self?.startGame()
+            }
+            .store(in: &subscriptions)
+
+        eventPublisher
+            .receive(on: RunLoop.main)
+           .sink { [weak self] obj in
+               switch obj {
+                   case .solved:
+                       self?.handleSolved()
+               }
+            }
+            .store(in: &subscriptions)
+
+        timer.$seconds
+            .receive(on: RunLoop.main)
+            .sink { [weak self] seconds in
+                self?.time = seconds.timerValue
             }
             .store(in: &subscriptions)
 
@@ -131,6 +151,10 @@ private extension SudokuController {
 
     private func calcViewModel() {
         viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, cellMarkers: model.markers[$0], isConflict: model.isConflict, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, showIncorrect: settings.showIncorrect) }
+    }
+
+    private func handleSolved() {
+        timer.pause()
     }
 
     private func handleUsageTap(number: Int) {

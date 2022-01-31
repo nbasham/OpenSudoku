@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct InfoView: View {
+    @EnvironmentObject var controller: SudokuController
     @EnvironmentObject var settings: Settings
     private let fontSize: CGFloat = 15
 
     var body: some View {
         HStack {
-            Text("00:00")
+            Text(controller.time)
                 .font(.system(size: fontSize, weight: .regular, design: .monospaced))
             Spacer()
             Text(settings.difficultyLevel.description.uppercased())
