@@ -18,6 +18,7 @@ class SudokuController: ObservableObject {
     private let puzzleSource: PuzzleSource = FilePuzzleSource()
     private var subscriptions = Set<AnyCancellable>()
     private var undoManager: UndoHistory<UndoState>?
+    private var lastPick: LastPick?
     let eventPublisher = PassthroughSubject<GameEvent, Never>()
     private var undoState: UndoState {
         UndoState(selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, guesses: model.undoState.1, markers: model.undoState.0)
@@ -87,7 +88,21 @@ private extension SudokuController {
             .map({ ($0.object as! NSNumber).intValue })
             .sink { [weak self] index in
                 self?.handleCellTap(index)
-           }
+            }
+            .store(in: &subscriptions)
+
+        center.publisher(for: PlayerAction.cellDoubleTap, object: nil)
+            .map({ ($0.object as! NSNumber).intValue })
+            .sink { [weak self] index in
+                guard let self = self, let pick = self.lastPick else { return }
+                let index = index
+                print(index)
+                if pick.isNumber {
+                    self.handleGuess(number: pick.number)
+                } else {
+                    self.handleMark(number: pick.marker)
+                }
+            }
             .store(in: &subscriptions)
 
         center.publisher(for: PlayerAction.undo, object: nil)
@@ -130,11 +145,13 @@ private extension SudokuController {
 
     private func handleMark(number: Int) {
         model.mark(selectedIndex, number: number)
+        lastPick = LastPick(marker: number)
         undoManager?.currentItem = undoState
     }
 
     private func handleGuess(number: Int) {
         model.guess(selectedIndex, value: number, showIncorrect: settings.showIncorrect)
+        lastPick = LastPick(number: number)
         undoManager?.currentItem = undoState
         if model.isSolved {
             eventPublisher.send(.solved)
@@ -206,6 +223,7 @@ private extension SudokuController {
                 if self.highlightedNumber == number {
                     self.highlightedNumber = nil
                 }
+                self.lastPick = nil
                 self.calcViewModel()
             }
         }
@@ -263,6 +281,7 @@ class PlayerAction: ObservableObject {
     static let numberGuess = Notification.Name("ui_numberGuess")
     static let markerGuess = Notification.Name("ui_markerGuess")
     static let cellTap = Notification.Name("ui_cellTap")
+    static let cellDoubleTap = Notification.Name("ui_cellDoubleTap")
     static let undo = Notification.Name("ui_undo")
     static let showSettings = Notification.Name("ui_showSettings")
     static let settingsDismiss = Notification.Name("ui_settingsDismiss")

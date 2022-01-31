@@ -25,8 +25,8 @@ struct SudokuPlayView: View {
                 }
                 InfoView()
             }
-            NumberPickerView()
             MarkerPickerView()
+            NumberPickerView()
         }
         .padding(.horizontal)
         .padding(.bottom)

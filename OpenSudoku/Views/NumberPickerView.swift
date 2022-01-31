@@ -42,10 +42,12 @@ struct NumberPickerView: View {
                         .foregroundColor(Color.sudoku(value: number))
 //                        .padding(1)
                 }
-                .padding(8)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 8)
             } else {
                 Text("\(number)")
-                    .padding()
+                    .font(.system(size: 29))
+                    .padding(8)
             }
         }
     }

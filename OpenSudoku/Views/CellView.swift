@@ -16,16 +16,12 @@ struct CellView: View {
                     switch animationType {
                         case let .completed(index, animating):
                             if model.id == index {
-//                                print("WE HAVE ARRIVED \(index)")
                                 animationAmount = animating ? 2.0 : 1
                             }
                     }
                 }
         }
         .aspectRatio(1, contentMode: .fit)
-        .onTapGesture {
-            PlayerAction.cellTap.send(obj: model.id)
-        }
         .background( model.backgroundColor )
         .overlay(
             Rectangle()
@@ -35,6 +31,12 @@ struct CellView: View {
         .overlay(
             markerView()
         )
+        .gesture(TapGesture(count: 2).onEnded {
+            PlayerAction.cellDoubleTap.send(obj: model.id)
+        })
+        .simultaneousGesture(TapGesture().onEnded {
+            PlayerAction.cellTap.send(obj: model.id)
+        })
     }
 
     private func colorSymbol() -> some View {

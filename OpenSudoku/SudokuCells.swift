@@ -41,7 +41,11 @@ class SudokuCells: ObservableObject {
     }
 
     func guess(_ index: Int, value: Int, showIncorrect: Bool = true) {
-        guard !isClue(index) else { fatalError("Can't set a value on a clue.") }
+        guard !isClue(index) else {
+            //  fatalError("Can't set a value on a clue.")
+            print("Guess on a clue is not allowed!.")
+            return
+        }
         cells[index].markers = Array(repeating: false, count: 9)
         if guesses[index] == value {
             guesses[index] = nil
