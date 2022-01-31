@@ -3,6 +3,7 @@ import Combine
 
 enum AnimationType {
     case completed(Int, Bool, Double)
+    case showAutoCompleting(Bool)
 }
 enum GameEvent {
     case solved
@@ -115,8 +116,6 @@ private extension SudokuController {
             .map({ ($0.object as! NSNumber).intValue })
             .sink { [weak self] index in
                 guard let self = self, let pick = self.lastPick else { return }
-                let index = index
-                print(index)
                 if pick.isNumber {
                     self.handleGuess(number: pick.number)
                 } else {
@@ -223,15 +222,19 @@ private extension SudokuController {
     //  Check if we should autofill the last number, if not, check if row, col, and or grid should be animated
     private func completed(index: Int, number: Int) {
         if shouldAutofill {
+            highlightedNumber = nil
+            calcViewModel()
             if let indexes = model.lastNumberIndexes {
-                let lastNumber = model.answer(at: indexes[0])
-                print("lastNumber \(lastNumber)")
-                print(indexes)
-                indexes.forEachAfter { i in
-                    self.model.guess(i, value: lastNumber)
-                }
-                animateLastNumber(indexes, number: lastNumber) {
-                    self.eventPublisher.send(.solved)
+                self.animationPublisher.send(.showAutoCompleting(true))
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    let lastNumber = self.model.answer(at: indexes[0])
+                    indexes.forEachAfter { i in
+                        self.model.guess(i, value: lastNumber)
+                    }
+                    self.animateLastNumber(indexes, number: lastNumber) {
+                        self.animationPublisher.send(.showAutoCompleting(false))
+                        self.eventPublisher.send(.solved)
+                    }
                 }
                 return
             }

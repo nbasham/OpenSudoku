@@ -18,6 +18,8 @@ struct CellView: View {
                             if model.id == index {
                                 animationAmount = animating ? maxAnimation : 1
                             }
+                        default:
+                            break
                     }
                 }
         }

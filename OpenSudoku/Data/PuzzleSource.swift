@@ -13,7 +13,6 @@ extension PuzzleIteratorSource {
     func next(level: PuzzleDifficultyLevel) -> [Int] {
         let key = indexKey(for: level)
         let puzzles = puzzles(for: level)
-        print("Iterator for key \(key) level \(level)")
         let iterator = PuzzleIterator(puzzles: puzzles, key: key)
         guard let puzzleString = iterator.next() else { fatalError() }
         return Self.stringToPuzzle(puzzleString)
