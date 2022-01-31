@@ -41,16 +41,18 @@ class SudokuController: ObservableObject {
 
 private extension SudokuController {
     private func almostSolve() {
-        if let lastIndex = model.lastUnguessedIndex {
-            for index in 0..<lastIndex-1 {
-                let isClue = model.cells[index].isClue
-                if !isClue && model.answer(at: index) != 5 {
-                    model.guess(index, value: model.answer(at: index))
-                }
+        guard let last4Index = model.lastIndex(of: 4) else { return }
+        let numberToSkip = 5
+        for index in stride(from: 80, through: 0, by: -1) {
+            let isClue = model.cells[index].isClue
+            if isClue { continue }
+            if last4Index == index { continue }
+            if model.answer(at: index) != numberToSkip {
+                model.guess(index, value: model.answer(at: index))
             }
-            selectedIndex = lastIndex - 1
-            highlightedNumber = model.answer(at: selectedIndex)
         }
+        selectedIndex = last4Index
+        highlightedNumber = 4
     }
 
     private func setupBindings() {

@@ -79,6 +79,11 @@ extension SudokuCells {
         (0...80).last(where: { guesses[$0] == nil })
     }
 
+    //  This is only used for debugging for use with almostSolve
+    func lastIndex(of number: Int) -> Int? {
+        (0...80).last(where: { guesses[$0] == nil && answers[$0] == number })
+    }
+
     var hasIncorrectGuess: Bool {
         !guesses.enumerated().allSatisfy { $1 == nil || $1 == answers[$0]}
     }
