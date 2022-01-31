@@ -201,12 +201,11 @@ private extension SudokuController {
     private func setHightlightNumber(_ number: Int?) {
         if number == highlightedNumber {
             highlightedNumber = nil
+            lastPick = nil
         } else {
             highlightedNumber = number
-            if lastPick == nil {
-                if let number = number {
-                    lastPick = LastPick(number: number)
-                }
+            if let number = number {
+                lastPick = LastPick(number: number)
             }
         }
     }
@@ -238,26 +237,39 @@ private extension SudokuController {
             }
         }
 
+        var delay: Double = 0.0
+
         if model.isRowComplete(for: index) {
-            animateCompletion(SudokuConstants.rowIndexes(index))
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.animateCompletion(SudokuConstants.rowIndexes(index))
+            }
+            delay += 1
         }
 
         if model.isColComplete(for: index) {
-            animateCompletion(SudokuConstants.colIndexes(index))
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.animateCompletion(SudokuConstants.colIndexes(index))
+            }
+            delay += 1
         }
 
         if model.isGridComplete(for: index) {
-            animateCompletion(SudokuConstants.gridIndexes(index))
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.animateCompletion(SudokuConstants.gridIndexes(index))
+            }
+            delay += 1
         }
 
         let indexes = model.indexes(for: number)
         if indexes.count == 9 {
-            animateCompletion(indexes) {
-                if self.highlightedNumber == number {
-                    self.highlightedNumber = nil
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.animateCompletion(indexes) {
+                    if self.highlightedNumber == number {
+                        self.highlightedNumber = nil
+                    }
+                    self.lastPick = nil
+                    self.calcViewModel()
                 }
-                self.lastPick = nil
-                self.calcViewModel()
             }
         }
     }
