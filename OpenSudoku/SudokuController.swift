@@ -1,13 +1,6 @@
 import Foundation
 import Combine
 
-enum AnimationType {
-    case completed(Int, Bool, Double)
-    case showAutoCompleting(Bool)
-}
-enum GameEvent {
-    case solved
-}
 class SudokuController: ObservableObject {
     let model = SudokuCells()
     @Published var viewModel = [CellViewModel]()
@@ -19,6 +12,7 @@ class SudokuController: ObservableObject {
     var timer = SecondsTimer()
     let animationPublisher = PassthroughSubject<AnimationType, Never>()
     private let puzzleSource: PuzzleSource = FilePuzzleSource()
+    private let notifications = Notifications()
     private var subscriptions = Set<AnyCancellable>()
     private var undoManager: UndoHistory<UndoState>?
     private var lastPick: LastPick?
@@ -29,6 +23,7 @@ class SudokuController: ObservableObject {
 
     init() {
         setupBindings()
+        notifications.setupNotifications(controller: self)
     }
 
     func startGame() {
@@ -39,21 +34,7 @@ class SudokuController: ObservableObject {
     }
 }
 
-private extension SudokuController {
-    private func almostSolve() {
-        guard let last4Index = model.lastIndex(of: 4) else { return }
-        let numberToSkip = 5
-        for index in stride(from: 80, through: 0, by: -1) {
-            let isClue = model.cells[index].isClue
-            if isClue { continue }
-            if last4Index == index { continue }
-            if model.answer(at: index) != numberToSkip {
-                model.guess(index, value: model.answer(at: index))
-            }
-        }
-        selectedIndex = last4Index
-        highlightedNumber = 4
-    }
+extension SudokuController {
 
     private func setupBindings() {
         model.$cells
@@ -88,66 +69,6 @@ private extension SudokuController {
                 self?.time = seconds.timerValue
             }
             .store(in: &subscriptions)
-
-        let center = NotificationCenter.default
-
-        center.publisher(for: PlayerAction.numberGuess, object: nil)
-            .map({ ($0.object as! NSNumber).intValue })
-            .sink { [weak self] number in
-                guard let self = self else { return }
-                self.handleGuess(number: number)
-            }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.markerGuess, object: nil)
-            .map({ ($0.object as! NSNumber).intValue })
-            .sink { [weak self] number in
-                guard let self = self else { return }
-                self.handleMark(number: number)
-            }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.cellTap, object: nil)
-            .map({ ($0.object as! NSNumber).intValue })
-            .sink { [weak self] index in
-                self?.handleCellTap(index)
-            }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.cellDoubleTap, object: nil)
-            .map({ ($0.object as! NSNumber).intValue })
-            .sink { [weak self] index in
-                guard let self = self, let pick = self.lastPick else { return }
-                if pick.isNumber {
-                    self.handleGuess(number: pick.number)
-                } else {
-                    self.handleMark(number: pick.marker)
-                }
-            }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.undo, object: nil)
-            .sink { _ in self.undo() }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.showSettings, object: nil)
-            .sink { _ in self.showSettings = true }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.settingsDismiss, object: nil)
-            .sink { _ in self.handleSettingsDismiss() }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.almostSolve, object: nil)
-            .sink { _ in self.almostSolve() }
-            .store(in: &subscriptions)
-
-        center.publisher(for: PlayerAction.usageTap, object: nil)
-            .map({ ($0.object as! NSNumber).intValue })
-            .sink { number in
-                self.handleUsageTap(number: number)
-            }
-            .store(in: &subscriptions)
     }
 
     private func calcViewModel() {
@@ -158,30 +79,41 @@ private extension SudokuController {
         timer.pause()
     }
 
-    private func handleUsageTap(number: Int) {
+    func handleUsageTap(number: Int) {
         highlightedNumber = number
         calcViewModel()
     }
 
-    private func handleSettingsDismiss() {
+    func handleSettingsDismiss() {
         calcViewModel()
         //  TODO I don't think we need this event
     }
 
-    private func handleMark(number: Int) {
+    func handleDoubleTap(number: Int) {
+        guard let pick = self.lastPick else { return }
+        if pick.isNumber {
+            self.handleGuess(number: pick.number)
+        } else {
+            self.handleMark(number: pick.marker)
+        }
+    }
+
+    func handleMark(number: Int) {
         model.mark(selectedIndex, number: number)
         lastPick = LastPick(marker: number)
         undoManager?.currentItem = undoState
     }
 
-    private func handleGuess(number: Int) {
-        model.guess(selectedIndex, value: number, showIncorrect: settings.showIncorrect)
+    func handleGuess(number: Int) {
+        let isCorrect = model.guess(selectedIndex, value: number, showIncorrect: settings.showIncorrect)
         lastPick = LastPick(number: number)
         undoManager?.currentItem = undoState
         if model.isSolved {
             eventPublisher.send(.solved)
         } else {
-            completed(index: selectedIndex, number: number)
+            if isCorrect || !settings.showIncorrect {
+                completed(index: selectedIndex, number: number)
+            }
         }
     }
 
@@ -189,7 +121,7 @@ private extension SudokuController {
         settings.completeLastNumber && model.onlyOneNumberRemains
     }
 
-    private func handleCellTap(_ index: Int) {
+    func handleCellTap(_ index: Int) {
         if model.cells[index].isClue || model.cells[index].isCorrect {
             setHightlightNumber(model.cells[index].value)
         } else {
@@ -211,7 +143,22 @@ private extension SudokuController {
         }
     }
 
-    private func undo() {
+    func almostSolve() {
+        guard let last4Index = model.lastIndex(of: 4) else { return }
+        let numberToSkip = 5
+        for index in stride(from: 80, through: 0, by: -1) {
+            let isClue = model.cells[index].isClue
+            if isClue { continue }
+            if last4Index == index { continue }
+            if model.answer(at: index) != numberToSkip {
+                model.guess(index, value: model.answer(at: index))
+            }
+        }
+        selectedIndex = last4Index
+        highlightedNumber = 4
+    }
+
+    func handleUndo() {
         undoManager?.undo()
         if let item = undoManager?.currentItem {
             selectedIndex = item.selectedIndex
@@ -322,23 +269,4 @@ extension Array where Element == Int {
            }
         }
     }
-}
-
-extension Notification.Name {
-    func send(obj: Any? = nil) {
-        NotificationCenter.default.post(name: self, object: obj)
-    }
-}
-
-class PlayerAction: ObservableObject {
-    let center = NotificationCenter.default
-    static let numberGuess = Notification.Name("ui_numberGuess")
-    static let markerGuess = Notification.Name("ui_markerGuess")
-    static let cellTap = Notification.Name("ui_cellTap")
-    static let cellDoubleTap = Notification.Name("ui_cellDoubleTap")
-    static let undo = Notification.Name("ui_undo")
-    static let showSettings = Notification.Name("ui_showSettings")
-    static let settingsDismiss = Notification.Name("ui_settingsDismiss")
-    static let usageTap = Notification.Name("ui_usageTap")
-    static let almostSolve = Notification.Name("ui_almostSolve")
 }

@@ -40,11 +40,12 @@ class SudokuCells: ObservableObject {
         calc()
     }
 
-    func guess(_ index: Int, value: Int, showIncorrect: Bool = true) {
+    @discardableResult
+    func guess(_ index: Int, value: Int, showIncorrect: Bool = true) -> Bool {
         guard !isClue(index) else {
             //  fatalError("Can't set a value on a clue.")
             print("Guess on a clue is not allowed!.")
-            return
+            return false
         }
         cells[index].markers = Array(repeating: false, count: 9)
         if guesses[index] == value {
@@ -58,6 +59,8 @@ class SudokuCells: ObservableObject {
        }
         markers[index] = Array(repeating: false, count: 9)
         calc()
+
+        return isCorrect(index)
     }
 
     func answer(at index: Int) -> Int {
