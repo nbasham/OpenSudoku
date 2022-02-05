@@ -70,12 +70,13 @@ extension CellViewModel {
 
     private static func bgColor(_ index: Int, value: Int?, selectedIndex: Int, highlightedNumber: Int?) -> Color {
         var color = Color.clear
+        let baseColor: Color = UITraitCollection.current.userInterfaceStyle == .light ? .accentColor : .white
 
         if value != nil && value == highlightedNumber {
-            color = .accentColor.opacity(0.7)
+            color = baseColor.opacity(0.7)
         }
         if index == selectedIndex {
-            color = .accentColor.opacity(0.3)
+            color = baseColor.opacity(0.3)
         }
         return color
     }

@@ -12,16 +12,17 @@ struct UsageView: View {
             ForEach((0..<9), id: \.self) { cellIndex in
                 ZStack {
                     if controller.model.usage[number-1][cellIndex] {
-                        Color.accentColor
+                        colorScheme == .dark ? Color(.systemGray5) : Color.accentColor
+
                     } else {
-                        Color(colorScheme == .dark ? .systemGray : .systemGray5)
+                        Color(colorScheme == .dark ? .systemGray3 : .systemGray5)
                     }
                 }
                 .aspectRatio(1, contentMode: .fit)
                 .overlay(
                     Rectangle()
                         .foregroundColor(.clear)
-                        .border(Color.black, width: pixelLength)
+                        .border(colorScheme == .dark ? Color.gray : Color.black, width: pixelLength)
                 )
             }
         }
@@ -37,6 +38,7 @@ struct UsageView_Previews: PreviewProvider {
             .onAppear {
                 controller.startGame()
             }
+            .preferredColorScheme(.dark)
     }
 }
 

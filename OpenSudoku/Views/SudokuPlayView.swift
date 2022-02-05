@@ -6,6 +6,7 @@ struct SudokuPlayView: View {
     private let boardColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 9)
     private let pickerColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 3)
     @State private var showSolvedAlert = false
+    @State private var showAutoCompleting = false
 
     var body: some View {
         VStack(spacing: 32) {
@@ -22,6 +23,7 @@ struct SudokuPlayView: View {
                 ZStack {
                     BoardView()
                     CellsView()
+                    autoComplete
                 }
                 InfoView()
             }
@@ -39,12 +41,28 @@ struct SudokuPlayView: View {
                     showSolvedAlert = true
             }
         }
+        .onReceive(controller.animationPublisher) { animationType in
+            switch animationType {
+                case let .showAutoCompleting(isShowing):
+                    showAutoCompleting = isShowing
+                default:
+                    break
+            }
+        }
         .sheet(isPresented: $controller.showSettings) {
             PlayerAction.settingsDismiss.send()
         } content: {
             SettingsView()
         }
         .accentColor(controller.settings.useColor ? .gray : .accentColor)
+    }
+
+    var autoComplete: some View {
+        Text(showAutoCompleting ? "Filling last number" : "")
+            .font(.system(size: 27, weight: .heavy, design: .default))
+            .foregroundColor(controller.settings.useColor ? .white : .accentColor)
+            .zIndex(Double.greatestFiniteMagnitude)
+
     }
 }
 
@@ -58,6 +76,6 @@ struct SudokuView_Previews: PreviewProvider {
             .onAppear {
                 controller.startGame()
             }
-            .preferredColorScheme(.light)
+            .preferredColorScheme(.dark)
     }
 }
