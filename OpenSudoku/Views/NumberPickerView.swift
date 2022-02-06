@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct NumberPickerView: View {
+    @EnvironmentObject var ui: UI
     @EnvironmentObject var settings: Settings
     @Environment(\.colorScheme) var colorScheme
 
-    private let cols = Array(repeating: GridItem(.flexible(), spacing: 0), count: 3)
+    private let cols = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
 
     var body: some View {
         LazyVGrid(columns: cols, spacing: 20) {
@@ -26,7 +27,7 @@ struct NumberPickerView: View {
                     }
                 }
                 .background(
-                    Color(colorScheme == .dark ? .systemGray4 : .systemGray5)
+                    ui.numberPickerBackgroundColor
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 9))
             }
@@ -37,16 +38,17 @@ struct NumberPickerView: View {
         Group {
             if settings.useColor {
                 Group {
-                    Image(systemName: "circle.fill")
-                        .font(.system(size: 25))
+                    UI.numberPickerColorImage
+                        .font(UI.numberPickerColorImageFont)
                         .foregroundColor(Color.sudoku(value: number))
                 }
                 .padding(.horizontal, 6)
                 .padding(.vertical, 8)
             } else {
                 Text("\(number)")
-                    .font(.system(size: 29))
-                    .padding(8)
+                    .font(UI.numberPickerNumberFont)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
             }
         }
     }
@@ -54,13 +56,20 @@ struct NumberPickerView: View {
 
 struct NumberPickerView_Previews: PreviewProvider {
     static var previews: some View {
+        let colorScheme: ColorScheme = .light
+        let useColor = false
+        let ui = UI()
+        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
         let controller = SudokuController()
-        controller.settings.useColor = true
+        controller.settings.useColor = useColor
         return NumberPickerView()
+            .environmentObject(ui)
             .environmentObject(controller)
             .environmentObject(controller.settings)
             .onAppear {
                 controller.startGame()
             }
+            .preferredColorScheme(colorScheme)
+            .frame(width: 380, height: 320)
     }
 }

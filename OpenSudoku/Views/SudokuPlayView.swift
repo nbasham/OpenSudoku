@@ -1,10 +1,9 @@
 import SwiftUI
 
 struct SudokuPlayView: View {
+    @EnvironmentObject var ui: UI
     @EnvironmentObject var controller: SudokuController
     @Environment(\.pixelLength) var pixelLength: CGFloat
-    private let boardColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 9)
-    private let pickerColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 3)
     @State private var showSolvedAlert = false
     @State private var showAutoCompleting = false
 
@@ -15,7 +14,7 @@ struct SudokuPlayView: View {
                 Button {
                     PlayerAction.showSettings.send()
                 } label: {
-                    Image(systemName: "gearshape.fill")
+                    UI.settingsImage
                         .imageScale(.large)
                 }
             }
@@ -28,12 +27,14 @@ struct SudokuPlayView: View {
                 InfoView()
             }
             MarkerPickerView()
-            NumberPickerView()
+                .frame(minHeight: 36)
+           NumberPickerView()
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .padding(.bottom)
-        .alert("Play Again", isPresented: $showSolvedAlert) {
-            Button("OK", role: .cancel) { controller.startGame() }
+        .alert(UI.playAgain, isPresented: $showSolvedAlert) {
+            Button(UI.ok, role: .cancel) { controller.startGame() }
         }
         .onReceive(controller.eventPublisher) { eventType in
             switch eventType {
@@ -54,28 +55,32 @@ struct SudokuPlayView: View {
         } content: {
             SettingsView()
         }
-        .accentColor(controller.settings.useColor ? .gray : .accentColor)
+        .accentColor(ui.gameAccentColor)
     }
 
     var autoComplete: some View {
-        Text(showAutoCompleting ? "Filling last number" : "")
-            .font(.system(size: 27, weight: .heavy, design: .default))
-            .foregroundColor(controller.settings.useColor ? .white : .accentColor)
+        Text(ui.autoCompleteText(isShowing: showAutoCompleting))
+                .font(ui.autoCompleteFont)
+            .foregroundColor(ui.autoCompleteTextColor)
             .zIndex(Double.greatestFiniteMagnitude)
-
     }
 }
 
 struct SudokuView_Previews: PreviewProvider {
     static var previews: some View {
+        let colorScheme: ColorScheme = .light
+        let useColor = false
+        let ui = UI()
+        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
         let controller = SudokuController()
-        controller.settings.useColor = false
+        controller.settings.useColor = useColor
         return SudokuPlayView()
+            .environmentObject(ui)
             .environmentObject(controller)
             .environmentObject(controller.settings)
             .onAppear {
                 controller.startGame()
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(colorScheme)
     }
 }

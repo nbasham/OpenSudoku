@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI // for Color
 
 class SudokuController: ObservableObject {
     let model = SudokuCells()
@@ -19,6 +20,14 @@ class SudokuController: ObservableObject {
     let eventPublisher = PassthroughSubject<GameEvent, Never>()
     private var undoState: UndoState {
         UndoState(selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, guesses: model.undoState.1, markers: model.undoState.0)
+    }
+    var autoCompleteTextColor: Color {
+        let darkMode = UITraitCollection.current.userInterfaceStyle == .dark
+        if settings.useColor {
+            return darkMode ? .white : .black
+        } else {
+            return .accentColor
+        }
     }
 
     init() {

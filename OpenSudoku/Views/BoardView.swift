@@ -1,20 +1,19 @@
 import SwiftUI
 
 struct BoardView: View {
+    @EnvironmentObject var ui: UI
     @EnvironmentObject var controller: SudokuController
-    let borderWidth: CGFloat = 2
-    private let cols = Array(repeating: GridItem(.flexible(), spacing: 2), count: 3)
     @Environment(\.colorScheme) var colorScheme
+    private let boardCols = Array(repeating: GridItem(.flexible(), spacing: 2), count: 3)
 
     var body: some View {
         ZStack {
-            LazyVGrid(columns: cols, spacing: borderWidth) {
-
+            LazyVGrid(columns: boardCols, spacing: UI.boardBorderWidth) {
                 ForEach((0...8), id: \.self) { gridIndex in
                     Rectangle()
                         .fill(gridIndex%2==0 ?
-                              Color(colorScheme == .dark ? .systemGray : .systemGray6) :
-                                Color(colorScheme == .dark ? .systemGray2 : .systemGray5))
+                              ui.evenGridColor :
+                                ui.oddGridColor)
                 }
                 .aspectRatio(1, contentMode: .fill)
             }
@@ -22,18 +21,28 @@ struct BoardView: View {
         .padding(0)
         .background(
             Color.primary
-                .padding(-borderWidth)
+                .padding(-UI.boardBorderWidth)
         )
         .disabled(true)
     }
 }
 
-struct GridView_Previews: PreviewProvider {
+struct BoardView_Previews: PreviewProvider {
     static var previews: some View {
+        let colorScheme: ColorScheme = .light
+        let useColor = false
+        let ui = UI()
+        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
         let controller = SudokuController()
+        controller.settings.useColor = useColor
         return BoardView()
+            .environmentObject(ui)
             .environmentObject(controller)
-            .environment(\.colorScheme, .light)
+            .environmentObject(controller.settings)
+            .onAppear {
+                controller.startGame()
+            }
+            .preferredColorScheme(colorScheme)
             .frame(width: 362, height: 362)
     }
 }

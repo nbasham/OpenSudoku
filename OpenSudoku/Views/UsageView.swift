@@ -2,6 +2,7 @@ import SwiftUI
 
 struct UsageView: View {
     let number: Int
+    @EnvironmentObject var ui: UI
     @EnvironmentObject var controller: SudokuController
     @Environment(\.pixelLength) var pixelLength: CGFloat
     @Environment(\.colorScheme) var colorScheme
@@ -12,17 +13,16 @@ struct UsageView: View {
             ForEach((0..<9), id: \.self) { cellIndex in
                 ZStack {
                     if controller.model.usage[number-1][cellIndex] {
-                        colorScheme == .dark ? Color(.systemGray5) : Color.accentColor
-
+                        ui.usageOnColor
                     } else {
-                        Color(colorScheme == .dark ? .systemGray3 : .systemGray5)
+                        ui.usageOffColor
                     }
                 }
                 .aspectRatio(1, contentMode: .fit)
                 .overlay(
                     Rectangle()
                         .foregroundColor(.clear)
-                        .border(colorScheme == .dark ? Color.gray : Color.black, width: pixelLength)
+                        .border(ui.usageLineColor, width: pixelLength)
                 )
             }
         }
@@ -31,14 +31,21 @@ struct UsageView: View {
 
 struct UsageView_Previews: PreviewProvider {
     static var previews: some View {
+        let colorScheme: ColorScheme = .dark
+        let useColor = false
+        let ui = UI()
+        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
         let controller = SudokuController()
-        UsageView(number: 1)
-            .frame(width: 48, height: 48)
+        controller.settings.useColor = useColor
+        return UsageView(number: 1)
+            .environmentObject(ui)
             .environmentObject(controller)
+            .environmentObject(controller.settings)
             .onAppear {
                 controller.startGame()
             }
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(colorScheme)
+            .frame(width: 48, height: 48)
     }
 }
 

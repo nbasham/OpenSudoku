@@ -5,8 +5,6 @@ struct MarkerPickerView: View {
 
     var body: some View {
         HStack {
-//            Image(systemName: "highlighter")
-//                .imageScale(.large)
             ForEach(1...9, id: \.self) { number in
                 Button {
                     PlayerAction.markerGuess.send(obj: number)
@@ -15,15 +13,12 @@ struct MarkerPickerView: View {
                         Circle()
                             .foregroundColor(Color(.systemGray5))
                         symbol(number)
-//                            .foregroundColor(.primary)
                     }
                     .aspectRatio(1, contentMode: .fit)
                 }
-//                .padding(8)
             }
 
         }
-        .frame(maxWidth: .infinity)
     }
 
     private func symbol(_ number: Int) -> some View {
