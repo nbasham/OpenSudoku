@@ -56,20 +56,9 @@ struct NumberPickerView: View {
 
 struct NumberPickerView_Previews: PreviewProvider {
     static var previews: some View {
-        let colorScheme: ColorScheme = .light
-        let useColor = false
-        let ui = UI()
-        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
-        let controller = SudokuController()
-        controller.settings.useColor = useColor
-        return NumberPickerView()
-            .environmentObject(ui)
-            .environmentObject(controller)
-            .environmentObject(controller.settings)
-            .onAppear {
-                controller.startGame()
-            }
-            .preferredColorScheme(colorScheme)
+        NumberPickerView()
+            .preview()
+            .padding()
             .frame(width: 380, height: 320)
     }
 }

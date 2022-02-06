@@ -105,14 +105,8 @@ struct CellView: View {
 
 struct CellView_Previews: PreviewProvider {
     static var previews: some View {
-        let controller = SudokuController()
-        controller.settings.useColor = true
-        return CellView(model: CellViewModel.sample)
+        CellView(model: CellViewModel.sample)
+            .preview()
             .frame(width: 44, height: 44)
-            .environmentObject(controller)
-            .environmentObject(controller.settings)
-            .onAppear {
-                controller.startGame()
-            }
     }
 }

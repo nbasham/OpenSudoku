@@ -39,13 +39,7 @@ struct MarkerPickerView: View {
 
 struct MarkerPickerView_Previews: PreviewProvider {
     static var previews: some View {
-        let controller = SudokuController()
-        controller.settings.useColor = false
-        return MarkerPickerView()
-            .environmentObject(controller)
-            .environmentObject(controller.settings)
-            .onAppear {
-                controller.startGame()
-            }
+        MarkerPickerView()
+            .preview()
     }
 }

@@ -68,19 +68,7 @@ struct SudokuPlayView: View {
 
 struct SudokuView_Previews: PreviewProvider {
     static var previews: some View {
-        let colorScheme: ColorScheme = .light
-        let useColor = false
-        let ui = UI()
-        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
-        let controller = SudokuController()
-        controller.settings.useColor = useColor
-        return SudokuPlayView()
-            .environmentObject(ui)
-            .environmentObject(controller)
-            .environmentObject(controller.settings)
-            .onAppear {
-                controller.startGame()
-            }
-            .preferredColorScheme(colorScheme)
+        SudokuPlayView()
+            .preview()
     }
 }

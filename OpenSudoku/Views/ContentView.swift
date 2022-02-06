@@ -19,11 +19,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        let controller = SudokuController()
-        return ContentView()
-            .environmentObject(controller)
-            .onAppear {
-                controller.startGame()
-            }
+        ContentView()
+            .preview()
     }
 }

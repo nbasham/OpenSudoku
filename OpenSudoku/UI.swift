@@ -1,7 +1,7 @@
 import SwiftUI
 
 class UI: ObservableObject {
-    @Published var gameAccentColor: Color = .gray
+    @Published var gameAccentColor: Color = .green
     @Published var autoCompleteTextColor: Color = .black
     @Published var autoCompleteFont: Font = .system(size: 27, weight: .heavy, design: .default)
     @Published var numberPickerBackgroundColor: Color = .black

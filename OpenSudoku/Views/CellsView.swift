@@ -16,20 +16,8 @@ struct CellsView: View {
 
 struct CellsView_Previews: PreviewProvider {
     static var previews: some View {
-        let colorScheme: ColorScheme = .light
-        let useColor = false
-        let ui = UI()
-        ui.calc(useColor: useColor, isDarkMode: colorScheme == .dark)
-        let controller = SudokuController()
-        controller.settings.useColor = useColor
-        return CellsView()
-            .environmentObject(ui)
-            .environmentObject(controller)
-            .environmentObject(controller.settings)
-            .onAppear {
-                controller.startGame()
-            }
-            .preferredColorScheme(colorScheme)
+        CellsView()
+            .preview()
             .frame(width: 320, height: 320)
     }
 }
