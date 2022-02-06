@@ -4,7 +4,6 @@ struct SudokuPlayView: View {
     @EnvironmentObject var ui: UI
     @EnvironmentObject var controller: SudokuController
     @Environment(\.pixelLength) var pixelLength: CGFloat
-    @State private var showSolvedAlert = false
     @State private var showAutoCompleting = false
 
     var body: some View {
@@ -24,24 +23,21 @@ struct SudokuPlayView: View {
                     CellsView()
                     autoComplete
                 }
-                InfoView()
+                if !controller.isSolved {
+                    InfoView()
+                }
             }
-            MarkerPickerView()
-                .frame(minHeight: 36)
-           NumberPickerView()
+            if controller.isSolved {
+                GameOverView()
+            } else {
+                MarkerPickerView()
+                    .frame(minHeight: 36)
+                NumberPickerView()
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .padding(.bottom)
-        .alert(UI.playAgain, isPresented: $showSolvedAlert) {
-            Button(UI.ok, role: .cancel) { controller.startGame() }
-        }
-        .onReceive(controller.eventPublisher) { eventType in
-            switch eventType {
-                case .solved:
-                    showSolvedAlert = true
-            }
-        }
         .onReceive(controller.animationPublisher) { animationType in
             switch animationType {
                 case let .showAutoCompleting(isShowing):

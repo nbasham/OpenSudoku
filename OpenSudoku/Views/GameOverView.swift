@@ -13,11 +13,11 @@ struct GameOverView: View {
             }
             HStack {
                 Spacer()
-                Button("Play Again") {
-                    print("play again")
+                Button("Play Again", role: .cancel) {
+                    controller.startGame()
                 }
                 Spacer()
-                Button("Scores") {
+                Button("Scores", role: .cancel) {
                     print("scores")
                 }
                 Spacer()

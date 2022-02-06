@@ -9,6 +9,7 @@ class SudokuController: ObservableObject {
     @Published var selectedIndex = 0
     @Published var highlightedNumber: Int? = nil
     @Published var showSettings = false
+    @Published var isSolved = false
     @Published var time = "00:00"
     var timer = SecondsTimer()
     let animationPublisher = PassthroughSubject<AnimationType, Never>()
@@ -17,7 +18,6 @@ class SudokuController: ObservableObject {
     private var subscriptions = Set<AnyCancellable>()
     private var undoManager: UndoHistory<UndoState>?
     private var lastPick: LastPick?
-    let eventPublisher = PassthroughSubject<GameEvent, Never>()
     private var undoState: UndoState {
         UndoState(selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, guesses: model.undoState.1, markers: model.undoState.0)
     }
@@ -36,6 +36,7 @@ class SudokuController: ObservableObject {
     }
 
     func startGame() {
+        isSolved = false
         model.startGame(puzzle: puzzleSource.next(level: settings.difficultyLevel))
         selectedIndex = model.firstUnguessedIndex ?? 0
         undoManager = UndoHistory(initialValue: undoState)
@@ -62,16 +63,6 @@ extension SudokuController {
             }
             .store(in: &subscriptions)
 
-        eventPublisher
-            .receive(on: RunLoop.main)
-           .sink { [weak self] obj in
-               switch obj {
-                   case .solved:
-                       self?.handleSolved()
-               }
-            }
-            .store(in: &subscriptions)
-
         timer.$seconds
             .receive(on: RunLoop.main)
             .sink { [weak self] seconds in
@@ -85,11 +76,13 @@ extension SudokuController {
     }
 
     private func handleSolved() {
+        isSolved = true
         timer.pause()
     }
 
     func handleUsageTap(number: Int) {
         highlightedNumber = number
+        lastPick = LastPick(number: number)
         calcViewModel()
     }
 
@@ -118,7 +111,7 @@ extension SudokuController {
         lastPick = LastPick(number: number)
         undoManager?.currentItem = undoState
         if model.isSolved {
-            eventPublisher.send(.solved)
+            handleSolved()
         } else {
             if isCorrect || !settings.showIncorrect {
                 completed(index: selectedIndex, number: number)
@@ -191,7 +184,7 @@ extension SudokuController {
                     }
                     self.animateLastNumber(indexes, number: lastNumber) {
                         self.animationPublisher.send(.showAutoCompleting(false))
-                        self.eventPublisher.send(.solved)
+                        self.handleSolved()
                     }
                 }
                 return

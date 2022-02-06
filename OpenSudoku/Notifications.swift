@@ -6,10 +6,6 @@ enum AnimationType {
     case showAutoCompleting(Bool)
 }
 
-enum GameEvent {
-    case solved
-}
-
 extension Notification.Name {
     func send(obj: Any? = nil) {
         NotificationCenter.default.post(name: self, object: obj)
