@@ -18,9 +18,3 @@ struct PreivewModifier: ViewModifier {
             .preferredColorScheme(colorScheme)
     }
 }
-
-extension View {
-    func preview() -> some View {
-        modifier(PreivewModifier())
-    }
-}

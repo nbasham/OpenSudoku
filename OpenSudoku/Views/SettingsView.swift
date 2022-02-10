@@ -3,31 +3,20 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var settings: Settings
     @State var sliderValue: Double = 0
+    private var levels = ["Easy", "Medium", "Hard", "Evil"]
+    @State private var level = "Easy"
 
     var body: some View {
         Form {
             Section(header: Text("SETTINGS")) {
                 Toggle("Show incorrect", isOn: $settings.showIncorrect)
                 Toggle("Use sound", isOn: $settings.useSound)
+                Toggle("Show timer", isOn: $settings.showTimer)
                 Toggle("Auto complete last number", isOn: $settings.completeLastNumber)
                 Toggle("Use color", isOn: $settings.useColor)
             }
             Section(header: Text("DIFFICULTY LEVEL")) {
-                VStack {
-                    Text(PuzzleDifficultyLevel(rawValue: Int(sliderValue))!.description)
-                    HStack {
-                        Text("Easy")
-                            .foregroundColor(.secondary)
-                        Slider(value: $sliderValue, in: 0...3, step: 1) { _ in
-                            settings.difficultyLevel = PuzzleDifficultyLevel(rawValue: Int(sliderValue))!
-                        }
-                        .onAppear {
-                            self.sliderValue = Double(settings.difficultyLevel.rawValue)
-                        }
-                        Text("Evil")
-                            .foregroundColor(.secondary)
-                    }
-                }
+                difficultyLevelView
             }
             Section(header: Text("DEBUG")) {
                 HStack {
@@ -38,6 +27,24 @@ struct SettingsView: View {
             }
         }
     }
+
+    private var difficultyLevelView: some View {
+        VStack {
+            Picker("Difficulty level", selection: $level) {
+                ForEach(levels, id: \.self) {
+                    Text($0)
+                }
+                .onChange(of: level) { value in
+                    if let levelValue = levels.firstIndex(of: value),
+                       let levelEnum = PuzzleDifficultyLevel(rawValue: levelValue) {
+                        settings.difficultyLevel = levelEnum
+                    }
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+        }
+    }
+
     private var almostSolveButton: some View {
         Button {
             PlayerAction.almostSolve.send()

@@ -4,6 +4,7 @@ class Settings: ObservableObject {
     @AppStorage("showIncorrect") var showIncorrect: Bool = true
     @AppStorage("completeLastNumber") var completeLastNumber: Bool = true
     @AppStorage("useSound") var useSound: Bool = true
+    @AppStorage("showTimer") var showTimer: Bool = true
     @AppStorage("useColor") var useColor: Bool = false
     @Published var difficultyLevel: PuzzleDifficultyLevel  {
         didSet {

@@ -36,4 +36,3 @@ struct UsageView_Previews: PreviewProvider {
             .frame(width: 48, height: 48)
     }
 }
-

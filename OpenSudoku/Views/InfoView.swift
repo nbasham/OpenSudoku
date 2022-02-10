@@ -7,9 +7,11 @@ struct InfoView: View {
 
     var body: some View {
         HStack {
-            Text(controller.time)
-                .font(.system(size: fontSize, weight: .regular, design: .monospaced))
-            Spacer()
+            if settings.showTimer {
+                Text(controller.time)
+                    .font(.system(size: fontSize, weight: .regular, design: .monospaced))
+                Spacer()
+            }
             Text(settings.difficultyLevel.description.uppercased())
                 .font(.system(size: fontSize, weight: .regular, design: .default))
             Spacer()
@@ -21,9 +23,9 @@ struct InfoView: View {
         Button {
             PlayerAction.undo.send()
         } label: {
+            //Image(systemName: "arrow.uturn.backward.circle")
             Text("Undo")
                 .font(.system(size: fontSize, weight: .regular, design: .default))
-//            Image(systemName: "arrow.uturn.backward.circle")
         }
     }
 }
