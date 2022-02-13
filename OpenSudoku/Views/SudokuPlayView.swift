@@ -16,6 +16,7 @@ struct SudokuPlayView: View {
                     UI.settingsImage
                         .imageScale(.large)
                 }
+                .padding(.trailing)
             }
             VStack {
                 ZStack {
@@ -23,8 +24,10 @@ struct SudokuPlayView: View {
                     CellsView()
                     autoComplete
                 }
+                .padding(.horizontal, controller.settings.wideView ? 0 : 16)
                 if !controller.isSolved {
                     InfoView()
+                        .padding(.horizontal)
                 }
             }
             if controller.isSolved {
@@ -32,11 +35,11 @@ struct SudokuPlayView: View {
             } else {
                 MarkerPickerView()
                     .frame(minHeight: 36)
+                    .padding(.horizontal)
                 NumberPickerView()
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal)
         .padding(.bottom)
         .onReceive(controller.animationPublisher) { animationType in
             switch animationType {

@@ -14,6 +14,7 @@ struct SettingsView: View {
                 Toggle("Show timer", isOn: $settings.showTimer)
                 Toggle("Auto complete last number", isOn: $settings.completeLastNumber)
                 Toggle("Use color", isOn: $settings.useColor)
+                Toggle("Edge to edge", isOn: $settings.wideView)
             }
             Section(header: Text("DIFFICULTY LEVEL")) {
                 difficultyLevelView

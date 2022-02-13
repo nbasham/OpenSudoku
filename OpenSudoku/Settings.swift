@@ -6,6 +6,7 @@ class Settings: ObservableObject {
     @AppStorage("useSound") var useSound: Bool = true
     @AppStorage("showTimer") var showTimer: Bool = true
     @AppStorage("useColor") var useColor: Bool = false
+    @AppStorage("wideView") var wideView: Bool = false
     @Published var difficultyLevel: PuzzleDifficultyLevel  {
         didSet {
             objectWillChange.send()
