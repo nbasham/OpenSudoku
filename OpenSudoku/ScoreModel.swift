@@ -5,6 +5,7 @@ struct ScoreModel: Codable, Comparable {
     let seconds: Int
     let numIncorrect: Int
     let numRemaining: Int
+    let usedColor: Bool
     var score: Int {
         max(0, 60 * 10 - seconds) -
         numIncorrect * 10 +

@@ -80,7 +80,7 @@ extension SudokuController {
     private func handleSolved(numRemaining: Int = 0) {
         isSolved = true
         timer.pause()
-        let score = ScoreModel(date: Date(), seconds: timer.seconds, numIncorrect: numIncorrect, numRemaining: numRemaining)
+        let score = ScoreModel(date: Date(), seconds: timer.seconds, numIncorrect: numIncorrect, numRemaining: numRemaining, usedColor: settings.useColor)
         Scores.add(score, level: settings.difficultyLevel)
     }
 

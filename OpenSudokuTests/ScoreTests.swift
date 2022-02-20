@@ -9,8 +9,8 @@ class ScoreTests: XCTestCase {
         userDefaults.removePersistentDomain(forName: #file)
     }
 
-    let lowScore = ScoreModel(date: Date(), seconds: 260, numIncorrect: 3, numRemaining: 4)
-    let highScore = ScoreModel(date: Date() + 1, seconds: 240, numIncorrect: 3, numRemaining: 4)
+    let lowScore = ScoreModel(date: Date(), seconds: 260, numIncorrect: 3, numRemaining: 4, usedColor: false)
+    let highScore = ScoreModel(date: Date() + 1, seconds: 240, numIncorrect: 3, numRemaining: 4, usedColor: true)
 
     func testScores() throws {
         for level in PuzzleDifficultyLevel.allCases {
