@@ -1,1 +1,21 @@
-More space between marker picker (number)
+Sounds
+
+Score
+Points for number remaining
+Points for time
+Deduct for incorrect, if showIncorrect == true
+
+struct ScoreViewModel: Identifiable, Comparable {
+    let id: UUID
+    let date: String
+    let time: String
+    let numIncorrect: String
+}
+
+struct ScoresViewModel {
+    let scores: [ScoreViewModel]
+    let recents: [ScoreViewModel]
+    let level: String
+    let average: String
+    let top: Score
+}

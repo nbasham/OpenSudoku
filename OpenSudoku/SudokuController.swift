@@ -12,6 +12,7 @@ class SudokuController: ObservableObject {
     @Published var isSolved = false
     @Published var time = "00:00"
     var timer = SecondsTimer()
+    var numIncorrect = 0
     let animationPublisher = PassthroughSubject<AnimationType, Never>()
     private let puzzleSource: PuzzleSource = FilePuzzleSource()
     private let notifications = Notifications()
@@ -40,6 +41,7 @@ class SudokuController: ObservableObject {
         model.startGame(puzzle: puzzleSource.next(level: settings.difficultyLevel))
         selectedIndex = model.firstUnguessedIndex ?? 0
         undoManager = UndoHistory(initialValue: undoState)
+        numIncorrect = 0
         timer.start()
     }
 }
@@ -75,9 +77,11 @@ extension SudokuController {
         viewModel = model.cells.enumerated().map { CellViewModel(id: $0, model: $1, cellMarkers: model.markers[$0], isConflict: model.isConflict, selectedIndex: selectedIndex, highlightedNumber: highlightedNumber, showIncorrect: settings.showIncorrect) }
     }
 
-    private func handleSolved() {
+    private func handleSolved(numRemaining: Int = 0) {
         isSolved = true
         timer.pause()
+        let score = ScoreModel(date: Date(), seconds: timer.seconds, numIncorrect: numIncorrect, numRemaining: numRemaining)
+        Scores.add(score, level: settings.difficultyLevel)
     }
 
     func handleUsageTap(number: Int) {
@@ -115,6 +119,8 @@ extension SudokuController {
         } else {
             if isCorrect || !settings.showIncorrect {
                 completed(index: selectedIndex, number: number)
+            } else if !isCorrect &&  settings.showIncorrect {
+                numIncorrect += 1
             }
         }
     }
@@ -176,6 +182,7 @@ extension SudokuController {
             highlightedNumber = nil
             calcViewModel()
             if let indexes = model.lastNumberIndexes {
+                let numRemaining = indexes.count
                 self.animationPublisher.send(.showAutoCompleting(true))
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     let lastNumber = self.model.answer(at: indexes[0])
@@ -184,7 +191,7 @@ extension SudokuController {
                     }
                     self.animateLastNumber(indexes, number: lastNumber) {
                         self.animationPublisher.send(.showAutoCompleting(false))
-                        self.handleSolved()
+                        self.handleSolved(numRemaining: numRemaining)
                     }
                 }
                 return
