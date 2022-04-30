@@ -6,9 +6,11 @@ class SudokuController: ObservableObject {
     let model = SudokuCells()
     @Published var viewModel = [CellViewModel]()
     @Published var settings = Settings()
+    @Published var boardXMargin = 0
     @Published var selectedIndex = 0
     @Published var highlightedNumber: Int? = nil
     @Published var showSettings = false
+    @Published var showScores = false
     @Published var isSolved = false
     @Published var time = "00:00"
     var timer = SecondsTimer()
@@ -30,6 +32,10 @@ class SudokuController: ObservableObject {
             return .accentColor
         }
     }
+    func calcBoardXMargin() {
+        if isSolved { boardXMargin = 16 }
+        else { boardXMargin = settings.wideView ? 0 : 16}
+    }
 
     init() {
         setupBindings()
@@ -43,6 +49,11 @@ class SudokuController: ObservableObject {
         undoManager = UndoHistory(initialValue: undoState)
         numIncorrect = 0
         timer.start()
+        calcBoardXMargin()
+    }
+
+    func scores() -> ScoresViewModel {
+        ScoresViewModel(scoreModels: Scores.load(level: settings.difficultyLevel), level: settings.difficultyLevel)
     }
 }
 
@@ -82,6 +93,7 @@ extension SudokuController {
         timer.pause()
         let score = ScoreModel(date: Date(), seconds: timer.seconds, numIncorrect: numIncorrect, numRemaining: numRemaining, usedColor: settings.useColor)
         Scores.add(score, level: settings.difficultyLevel)
+        calcBoardXMargin()
     }
 
     func handleUsageTap(number: Int) {

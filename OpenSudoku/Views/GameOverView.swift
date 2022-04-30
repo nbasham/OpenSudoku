@@ -18,7 +18,7 @@ struct GameOverView: View {
                 }
                 Spacer()
                 Button("Scores", role: .cancel) {
-                    print("scores")
+                    controller.showScores = true
                 }
                 Spacer()
             }

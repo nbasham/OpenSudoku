@@ -24,3 +24,17 @@ extension MarkerViewModel {
         MarkerViewModel(id: 9, number: 9)
     ]
 }
+
+extension ScoreModel {
+    static let examples: [ScoreModel] = [
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 248, numIncorrect: 0, numRemaining: 1, usedColor: true),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 222, numIncorrect: 0, numRemaining: 4, usedColor: false),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 175, numIncorrect: 0, numRemaining: 8, usedColor: true),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 243, numIncorrect: 1, numRemaining: 7, usedColor: false),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 240, numIncorrect: 3, numRemaining: 4, usedColor: true),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 210, numIncorrect: 0, numRemaining: 4, usedColor: false),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 180, numIncorrect: 0, numRemaining: 8, usedColor: true),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 233, numIncorrect: 1, numRemaining: 2, usedColor: false),
+        ScoreModel(date: Date() - TimeInterval(60*60*24 * Int.random(in: 1...10)), seconds: 200, numIncorrect: 1, numRemaining: 8, usedColor: true)
+    ]
+}

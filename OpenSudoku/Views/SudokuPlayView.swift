@@ -16,6 +16,7 @@ struct SudokuPlayView: View {
                     UI.settingsImage
                         .imageScale(.large)
                 }
+                .padding(.top)
                 .padding(.trailing)
             }
             VStack {
@@ -48,6 +49,12 @@ struct SudokuPlayView: View {
                 default:
                     break
             }
+        }
+        .sheet(isPresented: $controller.showScores) {
+            PlayerAction.showScores.send()
+        } content: {
+            ScoresView()
+                .environmentObject(controller.scores())
         }
         .sheet(isPresented: $controller.showSettings) {
             PlayerAction.settingsDismiss.send()
