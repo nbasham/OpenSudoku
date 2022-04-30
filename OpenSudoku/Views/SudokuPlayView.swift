@@ -51,7 +51,7 @@ struct SudokuPlayView: View {
             }
         }
         .sheet(isPresented: $controller.showScores) {
-            PlayerAction.showScores.send()
+            PlayerAction.hideScores.send()
         } content: {
             ScoresView()
                 .environmentObject(controller.scores())

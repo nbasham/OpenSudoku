@@ -20,7 +20,7 @@ class PlayerAction: ObservableObject {
     static let cellDoubleTap = Notification.Name("ui_cellDoubleTap")
     static let undo = Notification.Name("ui_undo")
     static let showSettings = Notification.Name("ui_showSettings")
-    static let showScores = Notification.Name("ui_showScores")
+    static let hideScores = Notification.Name("ui_hideScores")
     static let settingsDismiss = Notification.Name("ui_settingsDismiss")
     static let usageTap = Notification.Name("ui_usageTap")
     static let almostSolve = Notification.Name("ui_almostSolve")
@@ -68,8 +68,8 @@ class Notifications {
             .sink { _ in controller.showSettings = true }
             .store(in: &subscriptions)
 
-        center.publisher(for: PlayerAction.showScores, object: nil)
-            .sink { _ in controller.showScores = true }
+        center.publisher(for: PlayerAction.hideScores, object: nil)
+            .sink { _ in controller.showScores = false }
             .store(in: &subscriptions)
 
         center.publisher(for: PlayerAction.settingsDismiss, object: nil)
